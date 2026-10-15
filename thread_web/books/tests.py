@@ -150,3 +150,23 @@ class MainPageTests(TestCase):
         self.assertContains(res, "아직 쓰레드가 없습니다.")
         self.assertContains(res, 'href="/books/search/?q=%EC%97%AC%ED%96%89"')  # 주제 '여행' → 카카오 검색
         self.assertNotContains(res, "AI 추천")
+
+
+class RemoveSampleBooksMigrationTests(TestCase):
+    def test_removes_all_sample_books_but_keeps_real_ones(self):
+        from importlib import import_module
+
+        from django.apps import apps
+
+        user = User.objects.create_user("m")
+        sample = Book.objects.create(isbn="9788936434595", title="채식주의자")
+        no_isbn = Book.objects.create(isbn="NOISBN11", title="위싱데이")
+        real = Book.objects.create(isbn="9788954682152", title="작별하지 않는다")
+        Thread.objects.create(book=sample, user=user, title="샘플 책 쓰레드", body="b")
+        Thread.objects.create(book=real, user=user, title="진짜 책 쓰레드", body="b")
+        no_isbn.archived_by.add(user)
+
+        import_module("books.migrations.0005_remove_remaining_sample_books").remove_sample_books(apps, None)
+
+        self.assertEqual(list(Book.objects.values_list("title", flat=True)), ["작별하지 않는다"])
+        self.assertEqual(list(Thread.objects.values_list("title", flat=True)), ["진짜 책 쓰레드"])
