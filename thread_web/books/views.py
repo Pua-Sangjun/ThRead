@@ -2,7 +2,7 @@ from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -62,6 +62,14 @@ def detail(request, pk):
     threads = Thread.objects.with_likes(request.user).filter(book=book)
     page = Paginator(threads, 5).get_page(request.GET.get("page"))
     is_archived = request.user.is_authenticated and book.archived_by.filter(pk=request.user.pk).exists()
+
+    # 같은 장르의 책을 먼저, 모자라면 베스트셀러 순으로 채워 6권
+    similar = list(Book.objects.filter(genre=book.genre).exclude(pk=book.pk)[:6])
+    if len(similar) < 6:
+        similar += Book.objects.exclude(pk__in=[book.pk, *(b.pk for b in similar)]).order_by(
+            F("bestseller_rank").asc(nulls_last=True), "id"
+        )[: 6 - len(similar)]
+
     return render(
         request,
         "books/detail.html",
@@ -73,6 +81,15 @@ def detail(request, pk):
             # 쓰레드 페이지를 넘긴 경우 쓰레드 탭을 열어 둔다
             "thread_tab": "page" in request.GET,
             "library": LIBRARY,
+            "stats": {
+                "archived": book.archived_by.count(),
+                "threads": page.paginator.count,
+                # 샘플 좋아요 수 + 실제 회원 좋아요 수 (JOIN 으로 중복 합산되지 않게 따로 집계)
+                "likes": (Thread.objects.filter(book=book).aggregate(n=Sum("seed_likes"))["n"] or 0)
+                + Thread.liked_by.through.objects.filter(thread__book=book).count(),
+            },
+            "popular_threads": threads.order_by("-num_likes", "-id")[:3],
+            "similar_books": similar,
         },
     )
 

@@ -5,22 +5,48 @@
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/book_detail.css' %}" />{% endblock %}
 
 {% block content %}
-  <section class="detail-hero" style="background-image: url('{% static book.cover %}')">
+  <section class="detail-hero">
+    <!-- 배경: 흐리게 처리한 표지 (작은 표지를 늘려도 깨져 보이지 않게) -->
+    <div class="detail-backdrop" style="background-image: url('{% static book.cover %}')" aria-hidden="true"></div>
     <div class="container detail-content">
       <div class="row g-5 align-items-center">
-        <!-- 좌측: 작가 및 도서 소개 -->
+        <!-- 좌측: 도서 정보 -->
         <div class="col-12 col-lg-6">
-          <h1 class="book-title-lg">{{ book.title }}</h1>
-          <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+          <div class="book-head">
+            <img src="{% static book.cover %}" alt="{{ book.title }} 표지" class="book-cover-lg" />
+            <div class="book-head-text">
+              <h1 class="book-title-lg">{{ book.title }}</h1>
+              <ul class="book-chips">
+                {% if book.author and book.author != "-" %}<li><i class="bi bi-person"></i>{{ book.author }}</li>{% endif %}
+                {% if book.publisher and book.publisher != "-" %}<li><i class="bi bi-building"></i>{{ book.publisher }}</li>{% endif %}
+                {% if book.year %}<li><i class="bi bi-calendar3"></i>{{ book.year }}</li>{% endif %}
+                <li><a href="{% url 'books:search' %}?genre={{ book.genre|urlencode }}" class="chip-genre"><i class="bi bi-tag"></i>{{ book.genre }}</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <dl class="book-stats">
+            <div><dt>담은 독자</dt><dd>{{ stats.archived }}</dd></div>
+            <div><dt>쓰레드</dt><dd>{{ stats.threads }}</dd></div>
+            <div><dt>좋아요</dt><dd>{{ stats.likes }}</dd></div>
+          </dl>
+
+          <div class="book-actions">
             <form method="post" action="{% url 'books:archive' book.pk %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-archive btn-sm px-3{% if is_archived %} active{% endif %}">
+              <button type="submit" class="btn btn-archive{% if is_archived %} active{% endif %}">
                 <i class="bi {% if is_archived %}bi-archive-fill{% else %}bi-archive{% endif %} me-1"></i>
                 {% if is_archived %}담음{% else %}담기{% endif %}
               </button>
             </form>
-            <span class="book-meta">{{ book.meta }}</span>
+            <a href="{% url 'threads:write' %}?book={{ book.pk }}" class="btn btn-point">
+              <i class="bi bi-pencil-square me-1"></i>쓰레드 작성
+            </a>
+            <button type="button" class="btn btn-ghost-light" id="shareBtn" aria-label="링크 복사">
+              <i class="bi bi-link-45deg"></i>
+            </button>
           </div>
+
           {% for paragraph in book.description.splitlines %}
             {% if paragraph %}<p class="book-desc">{{ paragraph }}</p>{% endif %}
           {% endfor %}
@@ -89,8 +115,8 @@
                   <nav aria-label="Thread page navigation">
                     {% include "partials/pagination.html" with cls="pagination-sm mb-0" %}
                   </nav>
-                  <a href="{% url 'threads:write' %}?book={{ book.pk }}" class="btn btn-point btn-sm">
-                    <i class="bi bi-pencil-square me-1"></i> 쓰레드 작성
+                  <a href="{% url 'threads:list' %}?book={{ book.pk }}" class="btn btn-outline-light btn-sm">
+                    전체 보기 <i class="bi bi-chevron-right"></i>
                   </a>
                 </div>
               </div>
@@ -100,13 +126,67 @@
       </div>
     </div>
   </section>
-{% endblock %}
 
-{% block footer %}{% endblock %}
+  <!-- ========== 아래: 인기 쓰레드 / 함께 보면 좋은 책 ========== -->
+  <div class="detail-more">
+    <div class="container">
+      {% if popular_threads %}
+        <section class="mb-5">
+          <div class="more-head">
+            <h2 class="section-title">이 책의 인기 쓰레드</h2>
+            <a href="{% url 'threads:list' %}?book={{ book.pk }}&sort=likes" class="more-link">전체 보기 <i class="bi bi-chevron-right"></i></a>
+          </div>
+          <div class="row g-4">
+            {% for thread in popular_threads %}
+              {% include "partials/thread_card.html" %}
+            {% endfor %}
+          </div>
+        </section>
+      {% else %}
+        <section class="more-empty mb-5">
+          <i class="bi bi-chat-square-quote"></i>
+          <p>아직 이 책의 쓰레드가 없어요. 첫 감상을 남겨 보세요!</p>
+          <a href="{% url 'threads:write' %}?book={{ book.pk }}" class="btn btn-point btn-sm">쓰레드 작성</a>
+        </section>
+      {% endif %}
+
+      <section>
+        <div class="more-head">
+          <h2 class="section-title">함께 보면 좋은 책</h2>
+          <a href="{% url 'books:search' %}?genre={{ book.genre|urlencode }}" class="more-link">{{ book.genre }} 더 보기 <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="row g-4">
+          {% for book in similar_books %}
+            {% include "partials/book_card.html" %}
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}
 
 {% block extra_js %}
   {{ library|json_script:"library-data" }}
   <script>
+    // ========== 링크 복사 ==========
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+      let message = "링크를 복사했어요.";
+      try {
+        await navigator.clipboard.writeText(location.origin + location.pathname);
+      } catch (e) {
+        message = "복사하지 못했어요. 주소창의 링크를 직접 복사해 주세요.";
+      }
+      const box = document.createElement("div");
+      box.className = "toast-container position-fixed bottom-0 end-0 p-3";
+      box.style.zIndex = 2000;
+      box.innerHTML = `<div class="toast text-bg-dark border-0" role="status"><div class="toast-body"></div></div>`;
+      box.querySelector(".toast-body").textContent = message;
+      document.body.appendChild(box);
+      const toast = new bootstrap.Toast(box.firstElementChild, { delay: 2000 });
+      box.firstElementChild.addEventListener("hidden.bs.toast", () => box.remove());
+      toast.show();
+    });
+
     // ========== 카카오맵 (대여 가능 도서관) ==========
     // JavaScript 키는 .env 의 KAKAO_APP_KEY (Kakao Developers > 플랫폼 > Web 에 실행 도메인 등록 필요)
     const KAKAO_APP_KEY = "{{ KAKAO_APP_KEY|escapejs }}";

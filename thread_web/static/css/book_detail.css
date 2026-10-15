@@ -60,18 +60,28 @@ body {
 /* ========== Hero (전체 Viewport) ========== */
 .detail-hero {
   position: relative;
-  min-height: 100vh;
-  /* 배경 이미지(도서 표지)는 템플릿에서 style 속성으로 지정 */
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
   background-color: #111;
+  padding: 6rem 0 3rem;
+}
+/* 작은 표지를 크게 늘리면 깨져 보이므로 흐리게 처리해 분위기만 낸다 (이미지는 템플릿 style 속성) */
+.detail-backdrop {
+  position: absolute;
+  inset: -60px;
   background-size: cover;
   background-position: center;
-  padding: 6rem 0 3rem;
+  filter: blur(36px) saturate(1.2) brightness(0.55);
+  transform: scale(1.1);
 }
 /* 좌측은 검정에 가깝게, 우측은 투명에 가깝게 */
 .detail-hero::before {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     to right,
     rgba(0, 0, 0, 0.92) 0%,
@@ -82,13 +92,105 @@ body {
 .detail-content {
   position: relative;
   z-index: 2;
+  width: 100%; /* flex 안에서 container 가 줄어들지 않게 */
 }
 
 /* ========== 작가 및 도서 소개 (좌측) ========== */
+.book-head {
+  display: flex;
+  gap: 1.75rem;
+  align-items: flex-end;
+}
+.book-cover-lg {
+  flex: 0 0 150px;
+  width: 150px;
+  height: 220px; /* 원본 크기(150x220) 그대로 또렷하게 */
+  object-fit: cover;
+  border-radius: 0.35rem;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+}
+.book-head-text {
+  min-width: 0;
+}
 .book-title-lg {
   font-family: "GmarketSansTTFBold", "GmarketSansTTFMedium";
-  font-size: 4rem;
+  font-size: 3.2rem;
+  line-height: 1.2;
   margin-bottom: 1rem;
+  word-break: keep-all;
+}
+.book-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.book-chips li,
+.book-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #ddd;
+  text-decoration: none;
+}
+.book-chips i {
+  color: #999;
+}
+.book-chips li:has(.chip-genre) {
+  padding: 0;
+  border: 0;
+}
+.book-chips .chip-genre {
+  border-color: rgba(254, 74, 81, 0.6);
+  color: var(--point-color);
+}
+.book-chips .chip-genre i {
+  color: var(--point-color);
+}
+.book-chips .chip-genre:hover {
+  background: var(--point-color);
+  color: #fff;
+}
+.book-chips .chip-genre:hover i {
+  color: #fff;
+}
+.book-stats {
+  display: flex;
+  gap: 2.25rem;
+  margin: 1.75rem 0 1.25rem;
+}
+.book-stats dt {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #999;
+  margin-bottom: 0.15rem;
+}
+.book-stats dd {
+  margin: 0;
+  font-family: "GmarketSansTTFBold", "GmarketSansTTFMedium";
+  font-size: 1.5rem;
+  color: #fff;
+}
+.book-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+.btn-ghost-light {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+.btn-ghost-light:hover,
+.btn-ghost-light:focus {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 .btn-archive {
   border: 1px solid var(--point-color);
@@ -287,9 +389,88 @@ body {
   font-size: 1.1rem;
 }
 
+/* ========== 아래: 인기 쓰레드 / 함께 보면 좋은 책 ========== */
+.detail-more {
+  background: #111;
+  color: #eee;
+  padding: 4rem 0 5rem;
+  border-top: 1px solid #1f1f1f;
+}
+.detail-more .section-title {
+  color: #fff;
+}
+.more-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.more-link {
+  color: #999;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.more-link:hover {
+  color: var(--point-color);
+}
+.detail-more .thread-card {
+  background: #1a1a1a;
+  box-shadow: none;
+  border: 1px solid #262626;
+}
+.detail-more .thread-card .card-title {
+  color: #fff;
+}
+.detail-more .thread-card .card-text {
+  color: #aaa;
+}
+.detail-more .thread-card .card-footer {
+  border-top-color: #262626;
+  color: #888;
+}
+.detail-more .book-card .title {
+  color: #eee;
+}
+.detail-more .book-card .meta {
+  color: #888;
+}
+.more-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  border: 1px dashed #333;
+  border-radius: 0.5rem;
+  color: #aaa;
+}
+.more-empty i {
+  display: block;
+  font-size: 2rem;
+  color: var(--point-color);
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+  .detail-hero {
+    min-height: auto;
+  }
+}
+
 @media (max-width: 575.98px) {
+  .book-head {
+    gap: 1.1rem;
+  }
+  .book-cover-lg {
+    flex-basis: 100px;
+    width: 100px;
+    height: 147px;
+  }
   .book-title-lg {
-    font-size: 2.8rem;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .book-stats {
+    gap: 1.5rem;
   }
   .map-frame {
     height: 280px;

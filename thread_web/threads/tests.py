@@ -47,6 +47,18 @@ class PageTests(TestCase):
         self.assertFalse(res.context["thread_tab"])
         self.assertTrue(self.client.get("/books/2/?page=1").context["thread_tab"])
 
+    def test_book_detail_stats_and_sections(self):
+        res = self.client.get("/books/2/")
+        self.assertEqual(res.context["stats"], {"archived": 0, "threads": 4, "likes": 128 + 94 + 71 + 58})
+        self.assertEqual([t.num_likes for t in res.context["popular_threads"]], [128, 94, 71])
+        similar = res.context["similar_books"]
+        self.assertEqual(len(similar), 6)
+        self.assertNotIn(2, [b.pk for b in similar])
+        self.assertEqual([b.genre for b in similar[:3]], ["철학"] * 3)  # 같은 장르 먼저
+        self.assertContains(res, "이 책의 인기 쓰레드")
+        # 쓰레드가 없는 책은 첫 쓰레드 안내
+        self.assertContains(self.client.get("/books/13/"), "아직 이 책의 쓰레드가 없어요")
+
 
 class ActionTests(TestCase):
     @classmethod
