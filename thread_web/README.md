@@ -112,7 +112,8 @@ DB는 Render 무료 PostgreSQL이 **30일 뒤 만료**되므로, 만료 없는 �
 Render 무료 웹 서비스는 15분 동안 요청이 없으면 잠들고, 다음 접속 때 깨어나는 데 1분 정도 걸립니다.
 
 1. **GitHub 저장소** — Render는 lab.ssafy.com 을 연결할 수 없으므로 GitHub에 저장소를 만들어 push 합니다.
-2. **Neon** — 프로젝트를 만들고 연결 주소(`postgresql://...?sslmode=require`)를 복사합니다.
+2. **Neon** — 프로젝트를 **AWS Asia Pacific (Singapore)** 지역에 만들고, 연결 주소(`postgresql://...?sslmode=require`)를 복사합니다.
+   **Connection pooling은 끈 주소**(호스트에 `-pooler`가 없는 주소)를 씁니다. Django가 DB 연결을 직접 유지하므로 풀러가 필요 없습니다.
 3. **Render** — Dashboard > New > Blueprint > 저장소 선택. 입력 칸이 나오면 값을 넣습니다.
    - `DATABASE_URL`: Neon 연결 주소
    - `KAKAO_APP_KEY`, `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`: `.env`와 같은 값
