@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 from django.contrib import messages
+from django.http import Http404
 from django.core.paginator import Paginator
 from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
@@ -57,8 +58,14 @@ def search(request):
     )
 
 
-def detail(request, pk):
-    book = get_object_or_404(Book, pk=pk)
+def detail(request):
+    title = request.GET.get("title", "").strip()
+    if not title:
+        return redirect("books:search")
+    # 같은 제목이 여러 권이면 먼저 등록된 책 (실제 도서 데이터를 붙일 때는 ISBN 등으로 구분 필요)
+    book = Book.objects.filter(title=title).order_by("id").first()
+    if book is None:
+        raise Http404("도서를 찾을 수 없습니다.")
     threads = Thread.objects.with_likes(request.user).filter(book=book)
     page = Paginator(threads, 5).get_page(request.GET.get("page"))
     is_archived = request.user.is_authenticated and book.archived_by.filter(pk=request.user.pk).exists()
@@ -94,10 +101,16 @@ def detail(request, pk):
     )
 
 
+def detail_by_id(request, pk):
+    """예전 주소(/books/2/)로 들어오면 제목 주소로 영구 이동 (이미 공유된 링크 보호)"""
+    book = get_object_or_404(Book, pk=pk)
+    return redirect(book.get_absolute_url(), permanent=True)
+
+
 @require_POST
 def toggle_archive(request, pk):
     book = get_object_or_404(Book, pk=pk)
-    detail_url = reverse("books:detail", args=[pk])
+    detail_url = book.get_absolute_url()
     if not request.user.is_authenticated:
         return login_redirect(detail_url)
     if book.archived_by.filter(pk=request.user.pk).exists():

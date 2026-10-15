@@ -28,7 +28,7 @@
               <div class="d-flex justify-content-center flex-wrap gap-4">
                 {% for book in slide %}
                   <div class="book-item">
-                    <a href="{% url 'books:detail' book.pk %}">
+                    <a href="{{ book.get_absolute_url }}">
                       <img src="{% static book.cover %}" alt="{{ book.title }}" class="book-cover" />
                       <p class="book-title">{{ book.title }}</p>
                     </a>
@@ -52,7 +52,7 @@
       <div class="row align-items-center g-4">
         <div class="col-12 col-md-7 ai-books d-flex justify-content-center justify-content-md-end align-items-start">
           {% for book in ai_picks %}
-            <a href="{% url 'books:detail' book.pk %}"><img
+            <a href="{{ book.get_absolute_url }}"><img
               src="{% static book.cover %}"
               alt="{{ book.title }}"
               {% if forloop.counter == 2 %}class="img-fluid me-3" style="width: 140px; height: 210px"{% else %}class="img-fluid me-3 mt-3" style="max-width: 120px; min-height: 180px"{% endif %}

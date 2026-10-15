@@ -33,7 +33,7 @@
         {% endif %}
       </div>
 
-      <a href="{% url 'books:detail' thread.book.pk %}" class="d-flex gap-3 align-items-center mt-4 p-3 bg-light rounded text-decoration-none text-reset">
+      <a href="{{ thread.book.get_absolute_url }}" class="d-flex gap-3 align-items-center mt-4 p-3 bg-light rounded text-decoration-none text-reset">
         <img src="{% static thread.book.cover %}" alt="" style="width: 60px; height: 88px; object-fit: cover" />
         <div>
           <div class="point fw-bold">{{ thread.book.title }}</div>

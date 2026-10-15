@@ -1,5 +1,8 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 
 # 장르: (이름, 메인 Grid 영역 클래스, 이미지) — 메인 페이지 장르 Grid 순서와 동일
 GENRES = [
@@ -44,6 +47,10 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        """상세 페이지 주소: /books/?title=채식주의자"""
+        return f"{reverse('books:detail')}?{urlencode({'title': self.title})}"
 
     @property
     def meta(self):

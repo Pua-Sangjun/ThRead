@@ -14,14 +14,14 @@ class PageTests(TestCase):
         call_command("load_sample_data", verbosity=0)
 
     def test_public_pages_render(self):
-        for url in ["/", "/books/search/", "/books/search/?genre=철학&q=한", "/books/2/", "/books/2/?page=1",
+        for url in ["/", "/books/search/", "/books/search/?genre=철학&q=한", "/books/?title=채식주의자", "/books/?title=채식주의자&page=1",
                     "/threads/", "/threads/?book=2&sort=likes", "/threads/1/", reverse("accounts:login"),
                     reverse("accounts:signup")]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
 
     def test_not_found_page(self):
-        for url in ["/no-such-page/", "/books/999/", "/threads/999/"]:
+        for url in ["/no-such-page/", "/books/999/", "/books/?title=없는책", "/threads/999/"]:
             with self.subTest(url=url):
                 res = self.client.get(url)
                 self.assertEqual(res.status_code, 404)
@@ -41,14 +41,30 @@ class PageTests(TestCase):
         self.assertEqual(len(res.context["books"]), 2)
 
     def test_book_detail_threads_tab(self):
-        res = self.client.get("/books/2/")
+        res = self.client.get("/books/?title=채식주의자")
+        self.assertEqual(res.context["book"].pk, 2)
         self.assertEqual(res.context["page"].paginator.count, 4)
         self.assertContains(res, "1970년 광주에서")  # 작가 소개
         self.assertFalse(res.context["thread_tab"])
-        self.assertTrue(self.client.get("/books/2/?page=1").context["thread_tab"])
+        self.assertTrue(self.client.get("/books/?title=채식주의자&page=1").context["thread_tab"])
+
+    def test_book_detail_url_uses_title(self):
+        book = Book.objects.get(pk=2)
+        self.assertEqual(book.get_absolute_url(), "/books/?title=%EC%B1%84%EC%8B%9D%EC%A3%BC%EC%9D%98%EC%9E%90")
+        # 예전 주소는 새 주소로 영구 이동, 제목 없이 오면 검색으로
+        self.assertRedirects(self.client.get("/books/2/"), book.get_absolute_url(), status_code=301)
+        self.assertRedirects(self.client.get("/books/"), "/books/search/")
+        # 목록·카드 링크가 새 주소를 쓴다
+        self.assertContains(self.client.get("/"), f'href="{book.get_absolute_url()}"')
+        self.assertContains(self.client.get("/threads/7/"), f'href="{book.get_absolute_url()}"')
+        # 쓰레드가 5개를 넘어 페이지가 나뉘어도 페이지 링크에 제목이 유지된다
+        writer = User.objects.create_user("pager")
+        for i in range(2):
+            Thread.objects.create(book=book, user=writer, title=f"추가 {i}", body="본문")
+        self.assertContains(self.client.get(book.get_absolute_url()), "?title=%EC%B1%84%EC%8B%9D%EC%A3%BC%EC%9D%98%EC%9E%90&amp;page=2")
 
     def test_book_detail_stats_and_sections(self):
-        res = self.client.get("/books/2/")
+        res = self.client.get("/books/?title=채식주의자")
         self.assertEqual(res.context["stats"], {"archived": 0, "threads": 4, "likes": 128 + 94 + 71 + 58})
         self.assertEqual([t.num_likes for t in res.context["popular_threads"]], [128, 94, 71])
         similar = res.context["similar_books"]
@@ -57,7 +73,7 @@ class PageTests(TestCase):
         self.assertEqual([b.genre for b in similar[:3]], ["철학"] * 3)  # 같은 장르 먼저
         self.assertContains(res, "이 책의 인기 쓰레드")
         # 쓰레드가 없는 책은 첫 쓰레드 안내
-        self.assertContains(self.client.get("/books/13/"), "아직 이 책의 쓰레드가 없어요")
+        self.assertContains(self.client.get("/books/?title=Bauhaus"), "아직 이 책의 쓰레드가 없어요")
 
 
 class ActionTests(TestCase):
@@ -69,7 +85,8 @@ class ActionTests(TestCase):
 
     def test_anonymous_actions_redirect_to_login(self):
         res = self.client.post(reverse("books:archive", args=[2]))
-        self.assertRedirects(res, "/accounts/login/?next=%2Fbooks%2F2%2F", fetch_redirect_response=False)
+        self.assertRedirects(res, "/accounts/login/?next=%2Fbooks%2F%3Ftitle%3D%25EC%25B1%2584%25EC%258B%259D%25EC%25A3%25BC%25EC%259D%2598%25EC%259E%2590",
+                             fetch_redirect_response=False)
         res = self.client.post(reverse("threads:like", args=[1]))
         self.assertRedirects(res, "/accounts/login/?next=%2Fthreads%2F1%2F", fetch_redirect_response=False)
         res = self.client.get(reverse("threads:write"))
@@ -77,9 +94,10 @@ class ActionTests(TestCase):
 
     def test_archive_toggle(self):
         self.client.force_login(self.user)
-        self.client.post(reverse("books:archive", args=[2]))
+        res = self.client.post(reverse("books:archive", args=[2]))
+        self.assertRedirects(res, Book.objects.get(pk=2).get_absolute_url())
         self.assertTrue(Book.objects.get(pk=2).archived_by.filter(pk=self.user.pk).exists())
-        self.assertContains(self.client.get("/books/2/"), "담음")
+        self.assertContains(self.client.get("/books/?title=채식주의자"), "담음")
         self.assertContains(self.client.get("/mypage/"), "채식주의자")
         self.client.post(reverse("books:archive", args=[2]))
         self.assertFalse(Book.objects.get(pk=2).archived_by.exists())

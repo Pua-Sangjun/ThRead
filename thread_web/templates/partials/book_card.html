@@ -1,5 +1,5 @@
 {% load static %}<div class="col-6 col-sm-4 col-md-3 col-lg-2">
-  <a href="{% url 'books:detail' book.pk %}" class="book-card text-decoration-none">
+  <a href="{{ book.get_absolute_url }}" class="book-card text-decoration-none">
     <img src="{% static book.cover %}" alt="{{ book.title }}" />
     <p class="title">{{ book.title }}</p>
     <p class="meta">{{ book.short_meta }}</p>
