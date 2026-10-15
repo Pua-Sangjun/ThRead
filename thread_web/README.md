@@ -12,7 +12,6 @@ python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py load_books   # 도서 15권 · 작가 정보
 python manage.py runserver 5500
 ```
 
@@ -44,6 +43,15 @@ python manage.py runserver 5500
 
 값은 **서버 환경 변수 → `.env`** 순서로 읽습니다.
 
+### 도서 데이터 (카카오 책 검색)
+
+도서는 미리 넣어두지 않고 **카카오 책 검색 API에서 실시간으로** 가져옵니다.
+
+- 검색 결과는 DB에 저장하지 않고 보여만 줍니다. (같은 검색은 10분 캐시)
+- 상세 페이지를 처음 열 때 그 책 한 권을 ISBN 기준으로 저장합니다. 담기·쓰레드를 붙이기 위해서입니다.
+- 메인의 '독자들이 많이 담은 책'은 회원들이 실제로 담고 쓰레드를 쓴 수로 정합니다.
+- 카카오는 장르를 주지 않으므로, 메인의 주제 타일은 해당 주제어로 카카오 검색을 엽니다.
+
 ## 2. 구조
 
 ```
@@ -52,8 +60,7 @@ thread_web/
 ├── accounts/               # 회원(커스텀 User), 로그인·회원가입·로그아웃, 카카오 로그인, 마이 페이지
 │   └── kakao.py            # 카카오 OAuth REST API 호출 (urllib)
 ├── books/                  # 도서·작가 모델, 메인, 검색, 상세(카카오맵), 담기
-│   ├── fixtures/books.json            # 도서 15권 · 작가 정보
-│   └── management/commands/load_books.py
+│   └── kakao.py                       # 카카오 책 검색 API (검색, ISBN 조회, 10분 캐시)
 ├── threads/                # 쓰레드 모델, 목록·상세·작성·삭제, 좋아요
 ├── templates/              # base.html + 공통 조각(partials) + 앱별 페이지
 └── static/                 # 이미지·폰트, 공통·페이지별 CSS
@@ -64,8 +71,7 @@ thread_web/
 | 모델 | 주요 필드 |
 | --- | --- |
 | `accounts.User` | `AbstractUser` + `nickname`, `kakao_id`(카카오 회원번호, 고유), `profile_image` |
-| `books.Book` | 제목·작가·출판사·연도·장르·표지·소개, `bestseller_rank`, `is_ai_pick`, `archived_by`(담은 회원, M:N) |
-| `books.Author` | 작가 이름·소개 (도서 상세의 작가 소개) |
+| `books.Book` | `isbn`(고유)·제목·저자·출판사·연도·표지 주소·소개, `archived_by`(담은 회원, M:N). 카카오 책 검색에서 누군가 상세 페이지를 처음 열 때 저장 |
 | `threads.Thread` | 도서(FK)·작성자(FK)·제목·내용·대표 이미지, `liked_by`(좋아요한 회원, M:N) |
 
 좋아요 수는 실제 회원이 누른 수(`liked_by`)입니다. `Thread.objects.with_likes(user)`가 좋아요 수와 내 좋아요 여부를 한 번에 조회합니다.
@@ -74,9 +80,9 @@ thread_web/
 
 | 주소 | 화면 | 로그인 |
 | --- | --- | --- |
-| `/` | 메인 (베스트셀러, AI 추천, 장르, 인기 쓰레드) | |
-| `/books/search/?q=&genre=` | 도서 검색 | |
-| `/books/?title=책 제목` | 도서 상세 (카카오맵, 쓰레드 탭, 인기 쓰레드, 함께 보면 좋은 책). 예전 주소 `/books/<id>/`는 여기로 301 이동 | |
+| `/` | 메인 (독자들이 많이 담은 책, 주제별 도서, 인기 쓰레드) | |
+| `/books/search/?q=` | 카카오 책 실시간 검색 (24권씩, 다음 페이지). 검색어가 없으면 ThRead에 등록된 책 | |
+| `/books/?isbn=ISBN` | 도서 상세 (카카오맵, 쓰레드 탭, 인기 쓰레드, 이 작가의 다른 책). 예전 주소 `/books/<id>/`, `/books/?title=`는 여기로 301 이동 | |
 | `/books/<id>/archive/` | 담기 / 담기 취소 (POST) | 필요 |
 | `/threads/?book=&sort=` | 쓰레드 목록 | |
 | `/threads/<id>/` | 쓰레드 상세 | |
@@ -105,7 +111,7 @@ REST API 키와 클라이언트 시크릿은 서버에서만 쓰고 브라우저
 | 파일 | 역할 |
 | --- | --- |
 | `../render.yaml` | Render Blueprint: 웹 서비스 설정 (빌드·실행 명령, 환경 변수) |
-| `build.sh` | 패키지 설치 → `collectstatic` → `migrate` → 도서 정보(`load_books`) → (선택) 관리자 계정 생성 |
+| `build.sh` | 패키지 설치 → `collectstatic` → `migrate` → (선택) 관리자 계정 생성 |
 | `config/settings.py` | `DEBUG=False`일 때 HTTPS 리다이렉트·보안 쿠키·HSTS, WhiteNoise 정적 파일, `DATABASE_URL` |
 
 DB는 Render 무료 PostgreSQL이 **30일 뒤 만료**되므로, 만료 없는 무료 PostgreSQL(예: [Neon](https://neon.tech))을 씁니다.

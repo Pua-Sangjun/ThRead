@@ -3,14 +3,15 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.http import Http404
 from django.core.paginator import Paginator
-from django.db.models import F, Q
+from django.db.models import Count, F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from threads.models import Thread
 
-from .models import GENRES, Book
+from . import kakao
+from .models import TOPICS, Book
 
 # 도서 상세 > 대여 가능 도서관 (카카오맵)
 LIBRARY = {
@@ -27,62 +28,113 @@ def login_redirect(path):
 
 
 def main(request):
-    bestsellers = list(Book.objects.filter(bestseller_rank__isnull=False).order_by("bestseller_rank")[:12])
-    popular = Thread.objects.with_likes(request.user).order_by("-num_likes", "id")[:18]
+    # 독자들이 많이 담고 쓰레드를 쓴 책 (ThRead 회원 활동 기준)
+    popular_books = list(
+        Book.objects.annotate(
+            n_archived=Count("archived_by", distinct=True), n_threads=Count("threads", distinct=True)
+        )
+        .annotate(score=F("n_archived") + F("n_threads"))
+        .filter(score__gt=0)
+        .order_by("-score", "-id")[:12]
+    )
+    popular = Thread.objects.with_likes(request.user).order_by("-num_likes", "-id")[:18]
     page = Paginator(popular, 6).get_page(request.GET.get("page"))
     return render(
         request,
         "books/main.html",
         {
             # Carousel 한 장에 4권씩
-            "bestseller_slides": [bestsellers[i : i + 4] for i in range(0, len(bestsellers), 4)],
-            "ai_picks": Book.objects.filter(is_ai_pick=True),
-            "genres": GENRES,
+            "book_slides": [popular_books[i : i + 4] for i in range(0, len(popular_books), 4)],
+            "topics": TOPICS,
             "page": page,
         },
     )
 
 
+def _page_number(request):
+    try:
+        return max(1, int(request.GET.get("page", 1)))
+    except ValueError:
+        return 1
+
+
 def search(request):
+    """카카오 책 검색으로 모든 책을 찾는다. (검색어가 없으면 ThRead 에 등록된 책)"""
     q = request.GET.get("q", "").strip()
-    genre = request.GET.get("genre", "")
-    books = Book.objects.all()
-    if q:
-        books = books.filter(Q(title__icontains=q) | Q(author__icontains=q))
-    if genre:
-        books = books.filter(genre=genre)
-    return render(
-        request,
-        "books/search.html",
-        {"books": books, "q": q, "genre": genre, "genres": [g[0] for g in GENRES]},
+    context = {"q": q, "topics": [t[0] for t in TOPICS], "error": False}
+    if not q:
+        context["registered"] = Book.objects.order_by("-id")[:24]
+        return render(request, "books/search.html", context)
+
+    page = min(_page_number(request), kakao.MAX_PAGE)
+    try:
+        found, total, is_end = kakao.search(q, page=page)
+    except kakao.KakaoBookError:
+        found, total, is_end = [], 0, True
+        context["error"] = True
+    context.update(
+        {
+            # 저장 전 결과도 같은 카드 템플릿을 쓰도록 Book 객체로 만든다 (DB 에는 저장하지 않음)
+            "books": [Book(**fields) for fields in found],
+            "total": total,
+            "page": page,
+            "prev_page": page - 1 if page > 1 else None,
+            "next_page": page + 1 if not is_end and page < kakao.MAX_PAGE else None,
+        }
     )
+    return render(request, "books/search.html", context)
+
+
+def _get_or_create_by_isbn(isbn):
+    book = Book.objects.filter(isbn=isbn).first()
+    if book:
+        return book
+    try:
+        fields = kakao.find_by_isbn(isbn)
+    except kakao.KakaoBookError:
+        fields = None
+    if not fields:
+        return None
+    # 10자리로 들어와도 카카오가 준 13자리 ISBN 기준으로 저장 (같은 책이 두 번 저장되지 않게)
+    book, _ = Book.objects.get_or_create(isbn=fields.pop("isbn"), defaults=fields)
+    return book
 
 
 def detail(request):
+    isbn = request.GET.get("isbn", "").strip().replace("-", "")
     title = request.GET.get("title", "").strip()
-    if not title:
+    if not isbn and title:
+        # 예전 주소(?title=)로 들어오면 ISBN 주소로 이동
+        book = Book.objects.filter(title=title).order_by("id").first()
+        if book is None:
+            raise Http404("도서를 찾을 수 없습니다.")
+        return redirect(book.get_absolute_url(), permanent=True)
+    if not isbn:
         return redirect("books:search")
-    # 같은 제목이 여러 권이면 먼저 등록된 책 (실제 도서 데이터를 붙일 때는 ISBN 등으로 구분 필요)
-    book = Book.objects.filter(title=title).order_by("id").first()
+    book = _get_or_create_by_isbn(isbn)
     if book is None:
         raise Http404("도서를 찾을 수 없습니다.")
+    if book.isbn != isbn:
+        return redirect(book.get_absolute_url(), permanent=True)
+
     threads = Thread.objects.with_likes(request.user).filter(book=book)
     page = Paginator(threads, 5).get_page(request.GET.get("page"))
     is_archived = request.user.is_authenticated and book.archived_by.filter(pk=request.user.pk).exists()
 
-    # 같은 장르의 책을 먼저, 모자라면 베스트셀러 순으로 채워 6권
-    similar = list(Book.objects.filter(genre=book.genre).exclude(pk=book.pk)[:6])
-    if len(similar) < 6:
-        similar += Book.objects.exclude(pk__in=[book.pk, *(b.pk for b in similar)]).order_by(
-            F("bestseller_rank").asc(nulls_last=True), "id"
-        )[: 6 - len(similar)]
+    # 이 작가의 다른 책 (카카오 저자 검색, 실패하면 섹션을 숨김)
+    author_books = []
+    if book.first_author:
+        try:
+            found, _, _ = kakao.search(book.first_author, target="person", size=12)
+            author_books = [Book(**f) for f in found if f["isbn"] != book.isbn and f["title"] != book.title][:6]
+        except kakao.KakaoBookError:
+            pass
 
     return render(
         request,
         "books/detail.html",
         {
             "book": book,
-            "author_info": book.author_info,
             "is_archived": is_archived,
             "page": page,
             # 쓰레드 페이지를 넘긴 경우 쓰레드 탭을 열어 둔다
@@ -94,13 +146,13 @@ def detail(request):
                 "likes": Thread.liked_by.through.objects.filter(thread__book=book).count(),
             },
             "popular_threads": threads.order_by("-num_likes", "-id")[:3],
-            "similar_books": similar,
+            "author_books": author_books,
         },
     )
 
 
 def detail_by_id(request, pk):
-    """예전 주소(/books/2/)로 들어오면 제목 주소로 영구 이동 (이미 공유된 링크 보호)"""
+    """예전 주소(/books/2/)로 들어오면 ISBN 주소로 영구 이동 (이미 공유된 링크 보호)"""
     book = get_object_or_404(Book, pk=pk)
     return redirect(book.get_absolute_url(), permanent=True)
 

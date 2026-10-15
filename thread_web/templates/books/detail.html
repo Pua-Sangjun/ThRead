@@ -17,10 +17,10 @@
             <div class="book-head-text">
               <h1 class="book-title-lg">{{ book.title }}</h1>
               <ul class="book-chips">
-                {% if book.author and book.author != "-" %}<li><i class="bi bi-person"></i>{{ book.author }}</li>{% endif %}
-                {% if book.publisher and book.publisher != "-" %}<li><i class="bi bi-building"></i>{{ book.publisher }}</li>{% endif %}
+                {% if book.author %}<li><a href="{% url 'books:search' %}?q={{ book.first_author|urlencode }}" class="chip-link"><i class="bi bi-person"></i>{{ book.author }}</a></li>{% endif %}
+                {% if book.publisher %}<li><i class="bi bi-building"></i>{{ book.publisher }}</li>{% endif %}
                 {% if book.year %}<li><i class="bi bi-calendar3"></i>{{ book.year }}</li>{% endif %}
-                <li><a href="{% url 'books:search' %}?genre={{ book.genre|urlencode }}" class="chip-genre"><i class="bi bi-tag"></i>{{ book.genre }}</a></li>
+                {% if not book.isbn|slice:":6" == "NOISBN" %}<li><i class="bi bi-upc"></i>ISBN {{ book.isbn }}</li>{% endif %}
               </ul>
             </div>
           </div>
@@ -47,19 +47,12 @@
             </button>
           </div>
 
-          {% for paragraph in book.description.splitlines %}
-            {% if paragraph %}<p class="book-desc">{{ paragraph }}</p>{% endif %}
-          {% endfor %}
-
-          {% if author_info %}
-            <div class="author-box">
-              <div class="author-avatar"><i class="bi bi-person"></i></div>
-              <div>
-                <div class="author-name">{{ author_info.name }}</div>
-                <p class="author-desc mb-0">{{ author_info.bio }}</p>
-              </div>
-            </div>
+          {% if book.description %}
+            <p class="book-desc">{{ book.description }}</p>
+          {% else %}
+            <p class="book-desc text-white-50">소개 정보가 없는 책이에요.</p>
           {% endif %}
+          <p class="book-source mb-0">도서 정보 제공: 카카오</p>
         </div>
 
         <!-- 우측: 세부 정보 탭 -->
@@ -127,7 +120,7 @@
     </div>
   </section>
 
-  <!-- ========== 아래: 인기 쓰레드 / 함께 보면 좋은 책 ========== -->
+  <!-- ========== 아래: 인기 쓰레드 / 이 작가의 다른 책 ========== -->
   <div class="detail-more">
     <div class="container">
       {% if popular_threads %}
@@ -150,17 +143,19 @@
         </section>
       {% endif %}
 
-      <section>
-        <div class="more-head">
-          <h2 class="section-title">함께 보면 좋은 책</h2>
-          <a href="{% url 'books:search' %}?genre={{ book.genre|urlencode }}" class="more-link">{{ book.genre }} 더 보기 <i class="bi bi-chevron-right"></i></a>
-        </div>
-        <div class="row g-4">
-          {% for book in similar_books %}
-            {% include "partials/book_card.html" %}
-          {% endfor %}
-        </div>
-      </section>
+      {% if author_books %}
+        <section>
+          <div class="more-head">
+            <h2 class="section-title">{{ book.first_author }}의 다른 책</h2>
+            <a href="{% url 'books:search' %}?q={{ book.first_author|urlencode }}" class="more-link">더 보기 <i class="bi bi-chevron-right"></i></a>
+          </div>
+          <div class="row g-4">
+            {% for book in author_books %}
+              {% include "partials/book_card.html" %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

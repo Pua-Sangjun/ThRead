@@ -17,64 +17,51 @@
     </div>
   </section>
 
-  <!-- ========== Bestseller (Hero 위에 반만 걸침) ========== -->
+  <!-- ========== 독자들이 많이 담은 책 (Hero 위에 반만 걸침) ========== -->
   <section class="bestseller">
     <div class="container bestseller-container">
-      <h3 class="section-title">베스트셀러</h3>
-      <div id="bestsellerCarousel" class="carousel slide bestseller-carousel" data-bs-ride="carousel" data-bs-interval="3000">
-        <div class="carousel-inner">
-          {% for slide in bestseller_slides %}
-            <div class="carousel-item{% if forloop.first %} active{% endif %}">
-              <div class="d-flex justify-content-center flex-wrap gap-4">
-                {% for book in slide %}
-                  <div class="book-item">
-                    <a href="{{ book.get_absolute_url }}">
-                      <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="book-cover" />
-                      <p class="book-title">{{ book.title }}</p>
-                    </a>
-                  </div>
-                {% endfor %}
+      <h3 class="section-title">독자들이 많이 담은 책</h3>
+      {% if book_slides %}
+        <div id="bestsellerCarousel" class="carousel slide bestseller-carousel" data-bs-ride="carousel" data-bs-interval="3000">
+          <div class="carousel-inner">
+            {% for slide in book_slides %}
+              <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                <div class="d-flex justify-content-center flex-wrap gap-4">
+                  {% for book in slide %}
+                    <div class="book-item">
+                      <a href="{{ book.get_absolute_url }}">
+                        <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="book-cover" />
+                        <p class="book-title">{{ book.title }}</p>
+                      </a>
+                    </div>
+                  {% endfor %}
+                </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
+          {% if book_slides|length > 1 %}
+            <button class="carousel-control-next" type="button" data-bs-target="#bestsellerCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          {% endif %}
         </div>
-        <button class="carousel-control-next" type="button" data-bs-target="#bestsellerCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-      </div>
+      {% else %}
+        <div class="bestseller-empty">
+          <p class="mb-3">아직 담은 책이 없어요. 읽고 싶은 책을 찾아 첫 번째로 담아 보세요.</p>
+          <a href="{% url 'books:search' %}" class="btn btn-point btn-sm"><i class="bi bi-search me-1"></i>도서 검색</a>
+        </div>
+      {% endif %}
     </div>
   </section>
 
-  <!-- ========== AI Recommendation ========== -->
-  <section class="ai-section">
-    <div class="ai-recommendation">
-      <div class="row align-items-center g-4">
-        <div class="col-12 col-md-7 ai-books d-flex justify-content-center justify-content-md-end align-items-start">
-          {% for book in ai_picks %}
-            <a href="{{ book.get_absolute_url }}"><img
-              src="{{ book.cover_url }}"
-              alt="{{ book.title }}"
-              {% if forloop.counter == 2 %}class="img-fluid me-3" style="width: 140px; height: 210px"{% else %}class="img-fluid me-3 mt-3" style="max-width: 120px; min-height: 180px"{% endif %}
-            /></a>
-          {% endfor %}
-        </div>
-        <div class="col-12 col-md-5 text-center text-md-start">
-          <h3 class="mb-3 section-title">AI 추천</h3>
-          <p class="text-muted">구매 목록, 감명 깊게 읽은 도서 등</p>
-          <p class="text-muted">사용자 <span class="highlight">활동 데이터 기반</span> 인공지능 도서 추천</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ========== Genre List (CSS Grid) ========== -->
+  <!-- ========== 주제별 도서 (CSS Grid, 카카오 책 검색으로 연결) ========== -->
   <section class="genre-books">
-    <h3 class="section-title">장르별 도서 목록</h3>
+    <h3 class="section-title">주제별 도서</h3>
     <div class="genre-grid">
-      {% for name, area, image in genres %}
-        <a class="genre-item g-{{ area }}" href="{% url 'books:search' %}?genre={{ name|urlencode }}">
-          <img src="{% static image %}" alt="{{ name }}" />
+      {% for name, area, image in topics %}
+        <a class="genre-item g-{{ area }}" href="{% url 'books:search' %}?q={{ name|urlencode }}">
+          <img src="{% static image %}" alt="" />
           <p class="genre-name">{{ name }}</p>
         </a>
       {% endfor %}

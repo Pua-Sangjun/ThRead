@@ -142,23 +142,21 @@ body {
 .book-chips i {
   color: #999;
 }
-.book-chips li:has(.chip-genre) {
+.book-chips li:has(.chip-link) {
   padding: 0;
   border: 0;
 }
-.book-chips .chip-genre {
-  border-color: rgba(254, 74, 81, 0.6);
+.book-chips .chip-link:hover {
+  border-color: var(--point-color);
   color: var(--point-color);
 }
-.book-chips .chip-genre i {
+.book-chips .chip-link:hover i {
   color: var(--point-color);
 }
-.book-chips .chip-genre:hover {
-  background: var(--point-color);
-  color: #fff;
-}
-.book-chips .chip-genre:hover i {
-  color: #fff;
+.book-source {
+  font-size: 0.75rem;
+  color: #777;
+  margin-top: -0.5rem;
 }
 .book-stats {
   display: flex;

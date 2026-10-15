@@ -5,8 +5,8 @@ from django.db import models
 from django.templatetags.static import static
 from django.urls import reverse
 
-# 장르: (이름, 메인 Grid 영역 클래스, 이미지) — 메인 페이지 장르 Grid 순서와 동일
-GENRES = [
+# 메인 '주제별 도서' Grid: (검색어, Grid 영역 클래스, 이미지). 누르면 카카오 책 검색으로 이어진다.
+TOPICS = [
     ("여행", "travel", "genre/travel.webp"),
     ("건강", "health", "genre/health.webp"),
     ("예술", "art", "genre/art.webp"),
@@ -18,29 +18,20 @@ GENRES = [
     ("청소년", "youth", "genre/youth.webp"),
     ("경제", "economy", "genre/economy.webp"),
 ]
-GENRE_CHOICES = [(name, name) for name, _, _ in GENRES]
 
-
-class Author(models.Model):
-    name = models.CharField("이름", max_length=50, unique=True)
-    bio = models.TextField("소개")
-
-    def __str__(self):
-        return self.name
+NO_COVER = "covers/no-cover.webp"  # 카카오에 표지가 없는 책
 
 
 class Book(models.Model):
-    title = models.CharField("제목", max_length=100)
-    author = models.CharField("작가", max_length=50, blank=True)
-    publisher = models.CharField("출판사", max_length=50, blank=True)
+    """카카오 책 검색에서 누군가 상세 페이지를 연 책. (담기·쓰레드를 붙이기 위해 저장)"""
+
+    isbn = models.CharField("ISBN", max_length=13, unique=True)
+    title = models.CharField("제목", max_length=300)
+    author = models.CharField("저자", max_length=300, blank=True)
+    publisher = models.CharField("출판사", max_length=100, blank=True)
     year = models.PositiveSmallIntegerField("출간 연도", null=True, blank=True)
-    genre = models.CharField("장르", max_length=10, choices=GENRE_CHOICES)
-    isbn = models.CharField("ISBN-13", max_length=13, blank=True, db_index=True)
-    # 카카오 책 검색이 주는 표지 주소(https://...) 또는 static 안의 경로(covers/xxx.webp)
-    cover = models.CharField("표지", max_length=500)
-    description = models.TextField("소개")
-    bestseller_rank = models.PositiveSmallIntegerField("베스트셀러 순위", null=True, blank=True)
-    is_ai_pick = models.BooleanField("AI 추천", default=False)
+    cover = models.CharField("표지 주소", max_length=500, blank=True)  # 카카오 썸네일 주소
+    description = models.TextField("소개", blank=True)
     archived_by = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="archived_books", blank=True, verbose_name="담은 회원"
     )
@@ -53,21 +44,23 @@ class Book(models.Model):
 
     @property
     def cover_url(self):
+        if not self.cover:
+            return static(NO_COVER)
         return self.cover if self.cover.startswith(("http://", "https://")) else static(self.cover)
 
     def get_absolute_url(self):
-        """상세 페이지 주소: /books/?title=채식주의자"""
-        return f"{reverse('books:detail')}?{urlencode({'title': self.title})}"
+        """상세 페이지 주소: /books/?isbn=9788936434595"""
+        return f"{reverse('books:detail')}?{urlencode({'isbn': self.isbn})}"
 
     @property
     def meta(self):
-        """'한강 · 창비 · 2007 · 철학' 처럼 비어 있지 않은 정보만 이어 붙인다."""
-        return " · ".join(str(v) for v in (self.author, self.publisher, self.year, self.genre) if v and v != "-")
+        """'한강 · 창비 · 2007' 처럼 비어 있지 않은 정보만 이어 붙인다."""
+        return " · ".join(str(v) for v in (self.author, self.publisher, self.year) if v)
 
     @property
     def short_meta(self):
-        return " · ".join(v for v in (self.author, self.genre) if v and v != "-")
+        return " · ".join(v for v in (self.author, self.publisher) if v)
 
     @property
-    def author_info(self):
-        return Author.objects.filter(name=self.author).first()
+    def first_author(self):
+        return self.author.split(",")[0].strip()

@@ -1,40 +1,64 @@
 {% extends "base.html" %}
 
-{% block title %}ThRead - 도서 검색{% endblock %}
+{% block title %}ThRead - {% if q %}'{{ q }}' 검색{% else %}도서 검색{% endif %}{% endblock %}
 
 {% block content %}
   <header class="page-header">
     <div class="container">
       <h1>도서 검색</h1>
-      <p>제목, 작가, 장르로 원하는 도서를 찾아보세요</p>
+      <p>제목, 저자, 출판사, ISBN으로 모든 책을 찾아보세요</p>
     </div>
   </header>
 
   <main class="container py-5">
     <form method="get" class="row g-2 mb-3" role="search">
-      {% if genre %}<input type="hidden" name="genre" value="{{ genre }}" />{% endif %}
       <div class="col">
-        <input name="q" value="{{ q }}" class="form-control form-control-lg" type="search" placeholder="제목 또는 작가를 입력하세요" aria-label="검색어" />
+        <input name="q" value="{{ q }}" class="form-control form-control-lg" type="search" placeholder="제목, 저자, 출판사, ISBN" aria-label="검색어" autofocus />
       </div>
       <div class="col-auto">
         <button class="btn btn-point btn-lg" type="submit"><i class="bi bi-search"></i><span class="d-none d-sm-inline ms-1">검색</span></button>
       </div>
     </form>
 
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      <a href="{% querystring genre=None %}" class="btn btn-sm btn-outline-point rounded-pill{% if not genre %} active{% endif %}">전체</a>
-      {% for g in genres %}
-        <a href="{% querystring genre=g %}" class="btn btn-sm btn-outline-point rounded-pill{% if g == genre %} active{% endif %}">{{ g }}</a>
+    <div class="d-flex flex-wrap gap-2 mb-4" aria-label="주제로 검색">
+      {% for t in topics %}
+        <a href="?q={{ t|urlencode }}" class="btn btn-sm btn-outline-point rounded-pill{% if t == q %} active{% endif %}">{{ t }}</a>
       {% endfor %}
     </div>
 
-    <p class="text-muted small">검색 결과 {{ books|length }}권</p>
-    <div class="row g-4">
-      {% for book in books %}
-        {% include "partials/book_card.html" %}
-      {% empty %}
-        <p class="empty-state">조건에 맞는 도서가 없습니다.</p>
-      {% endfor %}
-    </div>
+    {% if q %}
+      {% if error %}
+        <p class="empty-state">지금은 도서 검색을 할 수 없어요. 잠시 후 다시 시도해 주세요.</p>
+      {% else %}
+        <p class="text-muted small">'{{ q }}' 검색 결과 {{ total }}권{% if total %} · {{ page }}페이지{% endif %}</p>
+        <div class="row g-4">
+          {% for book in books %}
+            {% include "partials/book_card.html" %}
+          {% empty %}
+            <p class="empty-state">검색 결과가 없습니다. 다른 검색어로 찾아보세요.</p>
+          {% endfor %}
+        </div>
+        {% if prev_page or next_page %}
+          <nav class="d-flex justify-content-center gap-2 mt-5" aria-label="검색 결과 페이지">
+            {% if prev_page %}
+              <a href="{% querystring page=prev_page %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i> 이전</a>
+            {% endif %}
+            {% if next_page %}
+              <a href="{% querystring page=next_page %}" class="btn btn-outline-secondary btn-sm">다음 <i class="bi bi-chevron-right"></i></a>
+            {% endif %}
+          </nav>
+        {% endif %}
+        <p class="text-center text-muted small mt-4 mb-0">도서 정보 제공: 카카오</p>
+      {% endif %}
+    {% else %}
+      <h2 class="section-title mb-3">ThRead 독자들이 살펴본 책</h2>
+      <div class="row g-4">
+        {% for book in registered %}
+          {% include "partials/book_card.html" %}
+        {% empty %}
+          <p class="empty-state">위에서 읽고 싶은 책을 검색해 보세요.</p>
+        {% endfor %}
+      </div>
+    {% endif %}
   </main>
 {% endblock %}

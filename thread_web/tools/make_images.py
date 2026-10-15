@@ -1,6 +1,6 @@
 """ThRead 사이트 그래픽 생성기 (저작권 걱정 없이 직접 만든 이미지)
 
-히어로 배경, 장르 타일, 쓰레드 대표 이미지, 카카오 책 검색에 없는 도서의 표지를
+히어로 배경, 장르 타일, 쓰레드 대표 이미지, 카카오에 표지가 없는 책의 기본 표지를
 그라데이션 + 흐린 색 덩어리 + '실(thread)' 곡선으로 그려 WebP 로 저장한다.
 
 사용법 (thread_web 폴더에서):  pip install pillow 후  python tools/make_images.py
@@ -125,45 +125,21 @@ def make_thread_images():
         save(img, f"threads/img{i}.webp")
 
 
-# ---------- 카카오 책 검색에 표지가 없는 도서 ----------
-PLACEHOLDER_COVERS = {
-    "covers/wishing-day.webp": ("위싱데이", "소피 커즌스", ("ffafcc", "6a4c93")),
-    "covers/mastering-ai.webp": ("Mastering AI", "Jeremy Kahn", ("4361ee", "0b132b")),
-}
-
-
-def wrap(draw, text, font, max_width):
-    words, lines, line = text.split(" "), [], ""
-    for word in words:
-        trial = f"{line} {word}".strip()
-        if draw.textlength(trial, font=font) <= max_width or not line:
-            line = trial
-        else:
-            lines.append(line)
-            line = word
-    lines.append(line)
-    return lines
-
-
-def make_covers():
+# ---------- 카카오에 표지가 없는 책의 기본 표지 ----------
+def make_no_cover():
     W, H = 300, 440  # 표지 비율 (150x220 의 2배)
-    for i, (rel, (title, author, (a, b))) in enumerate(PLACEHOLDER_COVERS.items()):
-        img = gradient((W, H), hex_rgb(a), hex_rgb(b))
-        img = blobs(img, [hex_rgb(a), hex_rgb(b), (255, 255, 255)], seed=500 + i, count=4, alpha=90)
-        img = threads(img, (255, 255, 255), seed=600 + i, lines=2, width_ratio=0.006, alpha=90)
-        d = ImageDraw.Draw(img)
-        title_font = ImageFont.truetype(str(FONT_BOLD), 34)
-        author_font = ImageFont.truetype(str(FONT_MEDIUM), 16)
-        y = 48
-        for line in wrap(d, title, title_font, W - 56):
-            d.text((28, y), line, font=title_font, fill=(255, 255, 255))
-            y += 44
-        d.text((28, H - 52), author, font=author_font, fill=(255, 255, 255, 220))
-        save(img, rel, quality=85)
+    img = gradient((W, H), hex_rgb("3a3a4a"), hex_rgb("15151c"))
+    img = blobs(img, [hex_rgb("4a4a5e"), POINT, hex_rgb("22222c")], seed=700, count=4, alpha=70)
+    img = threads(img, POINT, seed=701, lines=1, width_ratio=0.006, alpha=150)
+    img = threads(img, (255, 255, 255), seed=702, lines=2, width_ratio=0.004, alpha=60)
+    d = ImageDraw.Draw(img)
+    font = ImageFont.truetype(str(FONT_MEDIUM), 26)
+    d.text((W / 2, H - 60), "ThRead", font=font, fill=(255, 255, 255, 200), anchor="mm")
+    save(img, "covers/no-cover.webp", quality=85)
 
 
 if __name__ == "__main__":
     make_hero()
     make_genres()
     make_thread_images()
-    make_covers()
+    make_no_cover()

@@ -39,6 +39,9 @@ def detail(request, pk):
 
 @login_required
 def write(request):
+    if not Book.objects.exists():
+        messages.info(request, "먼저 쓰레드를 남길 책을 찾아 주세요.")
+        return redirect("books:search")
     form = ThreadForm(request.POST or None, initial={"book": request.GET.get("book")})
     if request.method == "POST" and form.is_valid():
         thread = form.save(commit=False)
