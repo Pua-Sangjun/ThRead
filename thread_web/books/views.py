@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.http import Http404
 from django.core.paginator import Paginator
-from django.db.models import F, Q, Sum
+from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -91,9 +91,7 @@ def detail(request):
             "stats": {
                 "archived": book.archived_by.count(),
                 "threads": page.paginator.count,
-                # 샘플 좋아요 수 + 실제 회원 좋아요 수 (JOIN 으로 중복 합산되지 않게 따로 집계)
-                "likes": (Thread.objects.filter(book=book).aggregate(n=Sum("seed_likes"))["n"] or 0)
-                + Thread.liked_by.through.objects.filter(thread__book=book).count(),
+                "likes": Thread.liked_by.through.objects.filter(thread__book=book).count(),
             },
             "popular_threads": threads.order_by("-num_likes", "-id")[:3],
             "similar_books": similar,

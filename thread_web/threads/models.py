@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.db.models import Count, Exists, F, OuterRef, Value
+from django.db.models import Count, Exists, OuterRef, Value
 
 from books.models import Book
 
@@ -14,7 +14,7 @@ class ThreadQuerySet(models.QuerySet):
         # 집계(GROUP BY) 쿼리에서는 Meta.ordering 이 적용되지 않으므로 정렬을 직접 지정
         qs = (
             self.select_related("book", "user")
-            .annotate(num_likes=F("seed_likes") + Count("liked_by"))
+            .annotate(num_likes=Count("liked_by"))
             .order_by(*Thread._meta.ordering)
         )
         if user is not None and user.is_authenticated:
@@ -31,8 +31,6 @@ class Thread(models.Model):
     title = models.CharField("제목", max_length=60)
     body = models.TextField("내용")
     image = models.CharField("대표 이미지 (static 경로, 비우면 도서 표지)", max_length=200, blank=True)
-    # 샘플 데이터의 좋아요 수 (실제 회원 좋아요는 liked_by 로 집계)
-    seed_likes = models.PositiveIntegerField("기본 좋아요 수", default=0)
     liked_by = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name="liked_threads", blank=True, verbose_name="좋아요한 회원"
     )

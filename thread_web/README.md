@@ -12,7 +12,7 @@ python -m venv .venv
 .venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py load_sample_data   # 도서 15권 · 쓰레드 12개 샘플 데이터
+python manage.py load_books   # 도서 15권 · 작가 정보
 python manage.py runserver 5500
 ```
 
@@ -52,8 +52,8 @@ thread_web/
 ├── accounts/               # 회원(커스텀 User), 로그인·회원가입·로그아웃, 카카오 로그인, 마이 페이지
 │   └── kakao.py            # 카카오 OAuth REST API 호출 (urllib)
 ├── books/                  # 도서·작가 모델, 메인, 검색, 상세(카카오맵), 담기
-│   ├── fixtures/sample_data.json      # 샘플 데이터 (도서 15권, 쓰레드 12개)
-│   └── management/commands/load_sample_data.py
+│   ├── fixtures/books.json            # 도서 15권 · 작가 정보
+│   └── management/commands/load_books.py
 ├── threads/                # 쓰레드 모델, 목록·상세·작성·삭제, 좋아요
 ├── templates/              # base.html + 공통 조각(partials) + 앱별 페이지
 └── static/                 # 이미지·폰트, 공통·페이지별 CSS
@@ -66,9 +66,9 @@ thread_web/
 | `accounts.User` | `AbstractUser` + `nickname`, `kakao_id`(카카오 회원번호, 고유), `profile_image` |
 | `books.Book` | 제목·작가·출판사·연도·장르·표지·소개, `bestseller_rank`, `is_ai_pick`, `archived_by`(담은 회원, M:N) |
 | `books.Author` | 작가 이름·소개 (도서 상세의 작가 소개) |
-| `threads.Thread` | 도서(FK)·작성자(FK)·제목·내용·대표 이미지, `liked_by`(좋아요한 회원, M:N), `seed_likes`(샘플 데이터의 좋아요 수) |
+| `threads.Thread` | 도서(FK)·작성자(FK)·제목·내용·대표 이미지, `liked_by`(좋아요한 회원, M:N) |
 
-좋아요 수는 `seed_likes + liked_by 수`로 계산합니다 (`Thread.objects.with_likes(user)`가 좋아요 수와 내 좋아요 여부를 한 번에 조회).
+좋아요 수는 실제 회원이 누른 수(`liked_by`)입니다. `Thread.objects.with_likes(user)`가 좋아요 수와 내 좋아요 여부를 한 번에 조회합니다.
 
 ### 주소
 
@@ -105,7 +105,7 @@ REST API 키와 클라이언트 시크릿은 서버에서만 쓰고 브라우저
 | 파일 | 역할 |
 | --- | --- |
 | `../render.yaml` | Render Blueprint: 웹 서비스 설정 (빌드·실행 명령, 환경 변수) |
-| `build.sh` | 패키지 설치 → `collectstatic` → `migrate` → 샘플 데이터 → (선택) 관리자 계정 생성 |
+| `build.sh` | 패키지 설치 → `collectstatic` → `migrate` → 도서 정보(`load_books`) → (선택) 관리자 계정 생성 |
 | `config/settings.py` | `DEBUG=False`일 때 HTTPS 리다이렉트·보안 쿠키·HSTS, WhiteNoise 정적 파일, `DATABASE_URL` |
 
 DB는 Render 무료 PostgreSQL이 **30일 뒤 만료**되므로, 만료 없는 무료 PostgreSQL(예: [Neon](https://neon.tech))을 씁니다.

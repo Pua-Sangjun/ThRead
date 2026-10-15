@@ -1,3 +1,6 @@
+from importlib import import_module
+
+from django.apps import apps
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
@@ -8,15 +11,30 @@ from books.models import Book
 from .models import Thread
 
 
+def make_threads():
+    """채식주의자(2번)에 쓰레드 3개(좋아요 3·2·1), 소년이 온다(1번)에 1개를 만든다."""
+    users = [User.objects.create_user(f"reader{i}", password="thread-pass-123", nickname=f"독자{i}") for i in range(3)]
+    vegetarian = Book.objects.get(pk=2)
+    threads = [
+        Thread.objects.create(book=vegetarian, user=users[i], title=f"채식주의자 감상 {i}", body=f"본문 {i}")
+        for i in range(3)
+    ]
+    for i, t in enumerate(threads):
+        t.liked_by.add(*users[: 3 - i])
+    other = Thread.objects.create(book_id=1, user=users[0], title="소년이 온다 감상", body="본문")
+    return users, threads, other
+
+
 class PageTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command("load_sample_data", verbosity=0)
+        call_command("load_books", verbosity=0)
+        cls.users, cls.threads, cls.other_thread = make_threads()
 
     def test_public_pages_render(self):
-        for url in ["/", "/books/search/", "/books/search/?genre=철학&q=한", "/books/?title=채식주의자", "/books/?title=채식주의자&page=1",
-                    "/threads/", "/threads/?book=2&sort=likes", "/threads/1/", reverse("accounts:login"),
-                    reverse("accounts:signup")]:
+        for url in ["/", "/books/search/", "/books/search/?genre=철학&q=한", "/books/?title=채식주의자",
+                    "/books/?title=채식주의자&page=1", "/threads/", "/threads/?book=2&sort=likes",
+                    f"/threads/{self.threads[0].pk}/", reverse("accounts:login"), reverse("accounts:signup")]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
 
@@ -29,9 +47,7 @@ class PageTests(TestCase):
 
     def test_main_shows_popular_threads_by_likes(self):
         res = self.client.get("/")
-        titles = [t.title for t in res.context["page"]]
-        self.assertEqual(len(titles), 6)
-        self.assertEqual(res.context["page"][0].num_likes, 128)
+        self.assertEqual([t.num_likes for t in res.context["page"]], [3, 2, 1, 0])
         self.assertEqual(len(res.context["bestseller_slides"]), 3)
 
     def test_search_filters(self):
@@ -43,7 +59,7 @@ class PageTests(TestCase):
     def test_book_detail_threads_tab(self):
         res = self.client.get("/books/?title=채식주의자")
         self.assertEqual(res.context["book"].pk, 2)
-        self.assertEqual(res.context["page"].paginator.count, 4)
+        self.assertEqual(res.context["page"].paginator.count, 3)
         self.assertContains(res, "1970년 광주에서")  # 작가 소개
         self.assertFalse(res.context["thread_tab"])
         self.assertTrue(self.client.get("/books/?title=채식주의자&page=1").context["thread_tab"])
@@ -56,17 +72,16 @@ class PageTests(TestCase):
         self.assertRedirects(self.client.get("/books/"), "/books/search/")
         # 목록·카드 링크가 새 주소를 쓴다
         self.assertContains(self.client.get("/"), f'href="{book.get_absolute_url()}"')
-        self.assertContains(self.client.get("/threads/7/"), f'href="{book.get_absolute_url()}"')
+        self.assertContains(self.client.get(f"/threads/{self.threads[0].pk}/"), f'href="{book.get_absolute_url()}"')
         # 쓰레드가 5개를 넘어 페이지가 나뉘어도 페이지 링크에 제목이 유지된다
-        writer = User.objects.create_user("pager")
-        for i in range(2):
-            Thread.objects.create(book=book, user=writer, title=f"추가 {i}", body="본문")
+        for i in range(3):
+            Thread.objects.create(book=book, user=self.users[0], title=f"추가 {i}", body="본문")
         self.assertContains(self.client.get(book.get_absolute_url()), "?title=%EC%B1%84%EC%8B%9D%EC%A3%BC%EC%9D%98%EC%9E%90&amp;page=2")
 
     def test_book_detail_stats_and_sections(self):
         res = self.client.get("/books/?title=채식주의자")
-        self.assertEqual(res.context["stats"], {"archived": 0, "threads": 4, "likes": 128 + 94 + 71 + 58})
-        self.assertEqual([t.num_likes for t in res.context["popular_threads"]], [128, 94, 71])
+        self.assertEqual(res.context["stats"], {"archived": 0, "threads": 3, "likes": 3 + 2 + 1})
+        self.assertEqual([t.num_likes for t in res.context["popular_threads"]], [3, 2, 1])
         similar = res.context["similar_books"]
         self.assertEqual(len(similar), 6)
         self.assertNotIn(2, [b.pk for b in similar])
@@ -76,19 +91,51 @@ class PageTests(TestCase):
         self.assertContains(self.client.get("/books/?title=Bauhaus"), "아직 이 책의 쓰레드가 없어요")
 
 
+class EmptySiteTests(TestCase):
+    """도서만 있고 쓰레드가 하나도 없는 실제 배포 직후 상태"""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("load_books", verbosity=0)
+
+    def test_pages_render_without_threads(self):
+        self.assertContains(self.client.get("/"), "아직 쓰레드가 없습니다.")
+        self.assertContains(self.client.get("/threads/"), "첫 쓰레드를 작성해 보세요")
+        res = self.client.get("/books/?title=채식주의자")
+        self.assertEqual(res.context["stats"], {"archived": 0, "threads": 0, "likes": 0})
+
+
+class RemoveSampleDataMigrationTests(TestCase):
+    def test_removes_only_passwordless_sample_users(self):
+        call_command("load_books", verbosity=0)
+        sample = User.objects.create(username="sample_김독자", nickname="김독자")
+        sample.set_unusable_password()
+        sample.save()
+        Thread.objects.create(book_id=1, user=sample, title="샘플", body="본문")
+        real = User.objects.create_user("sample_real", password="thread-pass-123")  # 일반 가입 회원
+        Thread.objects.create(book_id=1, user=real, title="진짜", body="본문")
+
+        import_module("threads.migrations.0002_remove_sample_threads").remove_sample_data(apps, None)
+
+        self.assertFalse(User.objects.filter(pk=sample.pk).exists())
+        self.assertEqual(list(Thread.objects.values_list("title", flat=True)), ["진짜"])
+        self.assertTrue(User.objects.filter(pk=real.pk).exists())
+
+
 class ActionTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command("load_sample_data", verbosity=0)
+        call_command("load_books", verbosity=0)
         cls.user = User.objects.create_user("reader", password="thread-pass-123", nickname="독자")
         cls.other = User.objects.create_user("other", password="thread-pass-123", nickname="다른독자")
+        cls.thread = Thread.objects.create(book_id=2, user=cls.other, title="감상", body="본문")
 
     def test_anonymous_actions_redirect_to_login(self):
         res = self.client.post(reverse("books:archive", args=[2]))
         self.assertRedirects(res, "/accounts/login/?next=%2Fbooks%2F%3Ftitle%3D%25EC%25B1%2584%25EC%258B%259D%25EC%25A3%25BC%25EC%259D%2598%25EC%259E%2590",
                              fetch_redirect_response=False)
-        res = self.client.post(reverse("threads:like", args=[1]))
-        self.assertRedirects(res, "/accounts/login/?next=%2Fthreads%2F1%2F", fetch_redirect_response=False)
+        res = self.client.post(reverse("threads:like", args=[self.thread.pk]))
+        self.assertRedirects(res, f"/accounts/login/?next=%2Fthreads%2F{self.thread.pk}%2F", fetch_redirect_response=False)
         res = self.client.get(reverse("threads:write"))
         self.assertEqual(res.status_code, 302)
 
@@ -103,18 +150,19 @@ class ActionTests(TestCase):
         self.assertFalse(Book.objects.get(pk=2).archived_by.exists())
 
     def test_like_toggle_counts(self):
+        url = reverse("threads:like", args=[self.thread.pk])
         self.client.force_login(self.user)
-        self.client.post(reverse("threads:like", args=[1]))
+        self.client.post(url)
         self.client.force_login(self.other)
-        self.client.post(reverse("threads:like", args=[1]))
-        t = Thread.objects.with_likes(self.other).get(pk=1)
-        self.assertEqual(t.num_likes, 128 + 2)
+        self.client.post(url)
+        t = Thread.objects.with_likes(self.other).get(pk=self.thread.pk)
+        self.assertEqual(t.num_likes, 2)
         self.assertTrue(t.is_liked)
         # 마이 페이지 '좋아요한 쓰레드'에서도 전체 좋아요 수가 나와야 함
         liked = self.client.get("/mypage/").context["liked"]
-        self.assertEqual(liked[0].num_likes, 130)
-        self.client.post(reverse("threads:like", args=[1]))
-        self.assertEqual(Thread.objects.with_likes().get(pk=1).num_likes, 129)
+        self.assertEqual(liked[0].num_likes, 2)
+        self.client.post(url)
+        self.assertEqual(Thread.objects.with_likes().get(pk=self.thread.pk).num_likes, 1)
 
     def test_write_and_delete_thread(self):
         self.client.force_login(self.user)
