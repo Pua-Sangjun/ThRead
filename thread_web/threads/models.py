@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.db import models
+from django.templatetags.static import static
 from django.db.models import Count, Exists, OuterRef, Value
 
 from books.models import Book
 
 # 쓰레드 대표 이미지로 고를 수 있는 기본 이미지 (빈 값이면 도서 표지 사용)
-THREAD_IMAGES = [f"threads/img{n}.jpg" for n in range(1, 7)]
+THREAD_IMAGES = [f"threads/img{n}.webp" for n in range(1, 7)]
 
 
 class ThreadQuerySet(models.QuerySet):
@@ -49,5 +50,5 @@ class Thread(models.Model):
         return not self.image
 
     @property
-    def image_path(self):
-        return self.image or self.book.cover
+    def image_url(self):
+        return static(self.image) if self.image else self.book.cover_url

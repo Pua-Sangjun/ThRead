@@ -1,4 +1,5 @@
 from importlib import import_module
+from pathlib import Path
 
 from django.apps import apps
 from django.core.management import call_command
@@ -91,6 +92,47 @@ class PageTests(TestCase):
         self.assertContains(self.client.get("/books/?title=Bauhaus"), "아직 이 책의 쓰레드가 없어요")
 
 
+class ImageTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("load_books", verbosity=0)
+
+    def test_covers_use_kakao_or_own_images(self):
+        vegetarian = Book.objects.get(pk=2)
+        self.assertEqual(vegetarian.isbn, "9788936434595")
+        self.assertTrue(vegetarian.cover_url.startswith("https://search1.kakaocdn.net/"))
+        # 카카오에 없는 책은 직접 만든 표지 (static)
+        self.assertEqual(Book.objects.get(pk=11).cover_url, "/static/covers/wishing-day.webp")
+        # 모든 표지가 카카오 주소이거나 static 안에 실제로 있는 파일
+        static_dir = Path(__file__).resolve().parent.parent / "static"
+        for b in Book.objects.all():
+            with self.subTest(book=b.title):
+                self.assertTrue(b.cover.startswith("https://") or (static_dir / b.cover).is_file(), b.cover)
+
+    def test_site_images_exist(self):
+        from books.models import GENRES
+
+        from .models import THREAD_IMAGES
+
+        static_dir = Path(__file__).resolve().parent.parent / "static"
+        for rel in [g[2] for g in GENRES] + THREAD_IMAGES + ["nav/hero.webp"]:
+            with self.subTest(rel=rel):
+                self.assertTrue((static_dir / rel).is_file())
+
+    def test_thread_image_url(self):
+        user = User.objects.create_user("img")
+        own = Thread.objects.create(book_id=2, user=user, title="a", body="b", image="threads/img3.webp")
+        self.assertEqual(own.image_url, "/static/threads/img3.webp")
+        self.assertContains(self.client.get(f"/threads/{own.pk}/"), 'src="/static/threads/img3.webp"')
+
+    def test_old_jpg_paths_are_migrated(self):
+        user = User.objects.create_user("old")
+        t = Thread.objects.create(book_id=2, user=user, title="a", body="b", image="threads/img2.jpg")
+        import_module("threads.migrations.0004_thread_images_webp").jpg_to_webp(apps, None)
+        t.refresh_from_db()
+        self.assertEqual(t.image, "threads/img2.webp")
+
+
 class EmptySiteTests(TestCase):
     """도서만 있고 쓰레드가 하나도 없는 실제 배포 직후 상태"""
 
@@ -173,7 +215,7 @@ class ActionTests(TestCase):
         )
         thread = Thread.objects.get(title="새 쓰레드")
         self.assertRedirects(res, reverse("threads:detail", args=[thread.pk]))
-        self.assertEqual(thread.image_path, Book.objects.get(pk=3).cover)
+        self.assertEqual(thread.image_url, Book.objects.get(pk=3).cover_url)  # 이미지를 안 고르면 도서 표지
         self.assertContains(self.client.get(reverse("threads:detail", args=[thread.pk])), "삭제")
 
         # 다른 회원은 삭제 불가

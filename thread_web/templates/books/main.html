@@ -6,7 +6,7 @@
 {% block content %}
   <!-- ========== Hero ========== -->
   <section class="hero-section">
-    <img src="{% static 'nav/hero_image.jpg' %}" alt="Hero Image" class="hero-img" />
+    <img src="{% static 'nav/hero.webp' %}" alt="" class="hero-img" />
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <h1 class="hero-title">
@@ -29,7 +29,7 @@
                 {% for book in slide %}
                   <div class="book-item">
                     <a href="{{ book.get_absolute_url }}">
-                      <img src="{% static book.cover %}" alt="{{ book.title }}" class="book-cover" />
+                      <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="book-cover" />
                       <p class="book-title">{{ book.title }}</p>
                     </a>
                   </div>
@@ -53,7 +53,7 @@
         <div class="col-12 col-md-7 ai-books d-flex justify-content-center justify-content-md-end align-items-start">
           {% for book in ai_picks %}
             <a href="{{ book.get_absolute_url }}"><img
-              src="{% static book.cover %}"
+              src="{{ book.cover_url }}"
               alt="{{ book.title }}"
               {% if forloop.counter == 2 %}class="img-fluid me-3" style="width: 140px; height: 210px"{% else %}class="img-fluid me-3 mt-3" style="max-width: 120px; min-height: 180px"{% endif %}
             /></a>

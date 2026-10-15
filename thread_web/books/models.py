@@ -2,20 +2,21 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 
 # 장르: (이름, 메인 Grid 영역 클래스, 이미지) — 메인 페이지 장르 Grid 순서와 동일
 GENRES = [
-    ("여행", "travel", "genre/travel.jpg"),
-    ("건강", "health", "genre/health.jpg"),
-    ("예술", "art", "genre/art.jpg"),
-    ("역사", "history", "genre/history.jpg"),
-    ("로맨스", "romance", "genre/romance.jpg"),
-    ("철학", "philosophy", "genre/philosophy.jpg"),
-    ("자연과학", "science", "genre/natural_science.jpg"),
-    ("유아", "baby", "genre/baby.jpg"),
-    ("청소년", "youth", "genre/youth.jpg"),
-    ("경제", "economy", "genre/economy.jpg"),
+    ("여행", "travel", "genre/travel.webp"),
+    ("건강", "health", "genre/health.webp"),
+    ("예술", "art", "genre/art.webp"),
+    ("역사", "history", "genre/history.webp"),
+    ("로맨스", "romance", "genre/romance.webp"),
+    ("철학", "philosophy", "genre/philosophy.webp"),
+    ("자연과학", "science", "genre/natural_science.webp"),
+    ("유아", "baby", "genre/baby.webp"),
+    ("청소년", "youth", "genre/youth.webp"),
+    ("경제", "economy", "genre/economy.webp"),
 ]
 GENRE_CHOICES = [(name, name) for name, _, _ in GENRES]
 
@@ -34,7 +35,9 @@ class Book(models.Model):
     publisher = models.CharField("출판사", max_length=50, blank=True)
     year = models.PositiveSmallIntegerField("출간 연도", null=True, blank=True)
     genre = models.CharField("장르", max_length=10, choices=GENRE_CHOICES)
-    cover = models.CharField("표지 (static 경로)", max_length=200)
+    isbn = models.CharField("ISBN-13", max_length=13, blank=True, db_index=True)
+    # 카카오 책 검색이 주는 표지 주소(https://...) 또는 static 안의 경로(covers/xxx.webp)
+    cover = models.CharField("표지", max_length=500)
     description = models.TextField("소개")
     bestseller_rank = models.PositiveSmallIntegerField("베스트셀러 순위", null=True, blank=True)
     is_ai_pick = models.BooleanField("AI 추천", default=False)
@@ -47,6 +50,10 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def cover_url(self):
+        return self.cover if self.cover.startswith(("http://", "https://")) else static(self.cover)
 
     def get_absolute_url(self):
         """상세 페이지 주소: /books/?title=채식주의자"""

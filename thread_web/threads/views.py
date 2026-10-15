@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.templatetags.static import static
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
@@ -54,7 +53,7 @@ def write(request):
             "form": form,
             "thread_images": THREAD_IMAGES,
             # 도서를 바꿀 때 '표지' 미리보기를 갱신하기 위한 도서 id → 표지 URL
-            "covers": {str(b.pk): static(b.cover) for b in Book.objects.all()},
+            "covers": {str(b.pk): b.cover_url for b in Book.objects.all()},
         },
     )
 

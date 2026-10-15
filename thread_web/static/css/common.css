@@ -74,7 +74,7 @@ main {
   display: flex;
   align-items: flex-end;
   color: #fff;
-  background: url("../nav/hero_image.jpg") center / cover;
+  background: url("../nav/hero.webp") center / cover;
   padding: 6rem 0 2rem;
 }
 .page-header::before {

@@ -23,7 +23,7 @@ body {
   display: flex;
   align-items: flex-end;
   padding: 6rem 4rem 4rem;
-  background: url("../nav/hero_image.jpg") center / cover;
+  background: url("../nav/hero.webp") center / cover;
   overflow: hidden;
 }
 .auth-visual::before {

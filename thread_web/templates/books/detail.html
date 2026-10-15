@@ -7,13 +7,13 @@
 {% block content %}
   <section class="detail-hero">
     <!-- 배경: 흐리게 처리한 표지 (작은 표지를 늘려도 깨져 보이지 않게) -->
-    <div class="detail-backdrop" style="background-image: url('{% static book.cover %}')" aria-hidden="true"></div>
+    <div class="detail-backdrop" style="background-image: url('{{ book.cover_url }}')" aria-hidden="true"></div>
     <div class="container detail-content">
       <div class="row g-5 align-items-center">
         <!-- 좌측: 도서 정보 -->
         <div class="col-12 col-lg-6">
           <div class="book-head">
-            <img src="{% static book.cover %}" alt="{{ book.title }} 표지" class="book-cover-lg" />
+            <img src="{{ book.cover_url }}" alt="{{ book.title }} 표지" class="book-cover-lg" />
             <div class="book-head-text">
               <h1 class="book-title-lg">{{ book.title }}</h1>
               <ul class="book-chips">
