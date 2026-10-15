@@ -1,0 +1,33 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}ThRead - 회원가입{% endblock %}
+
+{% block panel %}
+  <h2 class="auth-title">회원가입</h2>
+  <p class="auth-subtitle">아이디와 비밀번호로 ThRead를 시작하세요.</p>
+
+  {% if KAKAO_LOGIN_ENABLED %}
+    <a href="{% url 'accounts:kakao_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn-kakao-login">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#000" d="M12 3C6.48 3 2 6.58 2 11c0 2.85 1.86 5.35 4.66 6.77l-.95 3.48c-.08.3.26.54.52.37l4.14-2.75c.53.06 1.08.1 1.63.1 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+      </svg>
+      카카오로 3초 만에 시작하기
+    </a>
+    <div class="divider">또는 아이디로 가입</div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    {% include "accounts/_field.html" with field=form.username icon="person" autocomplete="username" help="150자 이하 영문, 숫자, @/./+/-/_ 만 사용할 수 있어요." %}
+    {% include "accounts/_field.html" with field=form.nickname icon="emoji-smile" autocomplete="nickname" help=form.nickname.help_text %}
+    {% include "accounts/_field.html" with field=form.password1 icon="lock" type="password" autocomplete="new-password" help="8자 이상, 숫자로만 이루어지지 않게 만들어 주세요." %}
+    {% include "accounts/_field.html" with field=form.password2 icon="lock-fill" type="password" autocomplete="new-password" %}
+    <button type="submit" class="btn btn-point btn-auth w-100 mt-2">가입하기</button>
+  </form>
+
+  <p class="text-center small mt-3 mb-0" style="color: #999">
+    이미 계정이 있으신가요?
+    <a href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="read text-decoration-none">로그인</a>
+  </p>
+{% endblock %}

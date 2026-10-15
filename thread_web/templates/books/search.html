@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}ThRead - 도서 검색{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>도서 검색</h1>
+      <p>제목, 작가, 장르로 원하는 도서를 찾아보세요</p>
+    </div>
+  </header>
+
+  <main class="container py-5">
+    <form method="get" class="row g-2 mb-3" role="search">
+      {% if genre %}<input type="hidden" name="genre" value="{{ genre }}" />{% endif %}
+      <div class="col">
+        <input name="q" value="{{ q }}" class="form-control form-control-lg" type="search" placeholder="제목 또는 작가를 입력하세요" aria-label="검색어" />
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-point btn-lg" type="submit"><i class="bi bi-search"></i><span class="d-none d-sm-inline ms-1">검색</span></button>
+      </div>
+    </form>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <a href="{% querystring genre=None %}" class="btn btn-sm btn-outline-point rounded-pill{% if not genre %} active{% endif %}">전체</a>
+      {% for g in genres %}
+        <a href="{% querystring genre=g %}" class="btn btn-sm btn-outline-point rounded-pill{% if g == genre %} active{% endif %}">{{ g }}</a>
+      {% endfor %}
+    </div>
+
+    <p class="text-muted small">검색 결과 {{ books|length }}권</p>
+    <div class="row g-4">
+      {% for book in books %}
+        {% include "partials/book_card.html" %}
+      {% empty %}
+        <p class="empty-state">조건에 맞는 도서가 없습니다.</p>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

@@ -1,0 +1,297 @@
+/* 도서 상세 페이지 (07-book_detail.html) 전용 스타일 */
+/* ========== 폰트 정의 ========== */
+@font-face {
+  font-family: "SBAggro_L";
+  src: url("../fonts/SBAggroOTF_L.ttf") format("truetype");
+}
+@font-face {
+  font-family: "GmarketSansTTFMedium";
+  src: url("../fonts/GmarketSansTTFMedium.ttf") format("truetype");
+}
+@font-face {
+  font-family: "GmarketSansTTFBold";
+  src: url("../fonts/GmarketSansTTFBold.ttf") format("truetype");
+}
+
+:root {
+  --point-color: #fe4a51;
+}
+body {
+  margin: 0;
+  color: #fff;
+  background: #111;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ========== Navbar (06-main.html과 동일) ========== */
+.navbar-custom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: transparent;
+}
+.navbar-custom .navbar-brand {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.5rem;
+}
+.th {
+  color: #fff;
+}
+.read {
+  color: var(--point-color);
+}
+.navbar-custom .nav-link {
+  font-family: "SBAggro_L";
+  color: #fff;
+}
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus {
+  color: var(--point-color);
+}
+.navbar-custom .navbar-collapse.show,
+.navbar-custom .navbar-collapse.collapsing {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+}
+
+/* ========== Hero (전체 Viewport) ========== */
+.detail-hero {
+  position: relative;
+  min-height: 100vh;
+  /* 배경 이미지(도서 표지)는 템플릿에서 style 속성으로 지정 */
+  background-color: #111;
+  background-size: cover;
+  background-position: center;
+  padding: 6rem 0 3rem;
+}
+/* 좌측은 검정에 가깝게, 우측은 투명에 가깝게 */
+.detail-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.7) 45%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+}
+.detail-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* ========== 작가 및 도서 소개 (좌측) ========== */
+.book-title-lg {
+  font-family: "GmarketSansTTFBold", "GmarketSansTTFMedium";
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+.btn-archive {
+  border: 1px solid var(--point-color);
+  color: var(--point-color);
+  background: transparent;
+  font-family: "SBAggro_L";
+}
+.btn-archive:hover {
+  background: var(--point-color);
+  color: #fff;
+}
+.book-meta {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+.book-desc {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #ddd;
+}
+.author-box {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  margin-top: 2rem;
+}
+.author-avatar {
+  flex: 0 0 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #ccc;
+}
+.author-name {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+.author-desc {
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #bbb;
+}
+
+/* ========== 세부 정보 탭 (우측) ========== */
+.detail-tabs {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+.detail-tabs .nav-tabs {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+.detail-tabs .nav-tabs .nav-link {
+  color: #ccc;
+  font-family: "SBAggro_L";
+  border: none;
+  background: transparent;
+}
+.detail-tabs .nav-tabs .nav-link.active {
+  color: var(--point-color);
+  border-bottom: 2px solid var(--point-color);
+}
+/* ========== 카카오맵 ========== */
+.map-frame {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: #1c1c1c;
+}
+/* SDK 로드 실패 / 앱 키 미설정 시 안내 */
+.map-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  color: #bbb;
+  font-size: 0.9rem;
+}
+.map-fallback i {
+  font-size: 2.5rem;
+  color: var(--point-color);
+}
+/* 지도 위 커스텀 마커 라벨 */
+.map-label {
+  position: relative;
+  bottom: 46px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--point-color);
+  color: #fff;
+  font-family: "SBAggro_L";
+  font-size: 0.8rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.map-label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom: 0;
+  border-top-color: var(--point-color);
+}
+.map-links .btn {
+  font-size: 0.8rem;
+  border-radius: 999px;
+}
+.btn-kakao {
+  background: #fee500;
+  border-color: #fee500;
+  color: #191919;
+}
+.btn-kakao:hover,
+.btn-kakao:focus {
+  background: #f5dc00;
+  border-color: #f5dc00;
+  color: #191919;
+}
+.thread-list .list-group-item {
+  background: transparent;
+  color: #eee;
+  border-color: rgba(255, 255, 255, 0.12);
+  padding: 0.9rem 0.25rem;
+}
+.thread-list a {
+  color: inherit;
+  text-decoration: none;
+}
+.thread-list a:hover {
+  color: var(--point-color);
+}
+.btn-archive.active {
+  background: var(--point-color);
+  color: #fff;
+}
+.thread-list .thread-author {
+  color: #999;
+  font-size: 0.8rem;
+}
+.thread-list .likes {
+  color: #ddd;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.thread-list .likes i {
+  color: var(--point-color);
+}
+.detail-tabs .pagination .page-link {
+  border: none;
+  background: transparent;
+  color: #aaa;
+}
+.detail-tabs .pagination .page-item.active .page-link {
+  color: var(--point-color);
+  font-weight: 700;
+}
+.btn-point {
+  background-color: var(--point-color);
+  border-color: var(--point-color);
+  color: #fff;
+}
+.btn-point:hover,
+.btn-point:focus {
+  background-color: #e63e45;
+  border-color: #e63e45;
+  color: #fff;
+}
+
+/* Modal은 밝은 배경 유지 */
+.logout-modal .modal-content {
+  color: #333;
+  border: none;
+  border-radius: 0.75rem;
+}
+.logout-modal .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.logout-modal .modal-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.1rem;
+}
+
+@media (max-width: 575.98px) {
+  .book-title-lg {
+    font-size: 2.8rem;
+  }
+  .map-frame {
+    height: 280px;
+  }
+}

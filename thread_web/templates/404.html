@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}ThRead - 페이지를 찾을 수 없어요{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>404</h1>
+      <p>요청하신 페이지를 찾을 수 없어요</p>
+    </div>
+  </header>
+  <main class="container py-5 text-center">
+    <p class="text-muted mb-4">주소가 바뀌었거나 삭제된 페이지일 수 있어요.</p>
+    <div class="d-flex justify-content-center gap-2">
+      <a href="{% url 'books:main' %}" class="btn btn-point">메인으로</a>
+      <a href="{% url 'books:search' %}" class="btn btn-outline-secondary">도서 검색</a>
+    </div>
+  </main>
+{% endblock %}

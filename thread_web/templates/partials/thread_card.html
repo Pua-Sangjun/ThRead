@@ -1,0 +1,15 @@
+<div class="{{ col|default:'col-12 col-sm-6 col-lg-4' }}">
+  <a href="{% url 'threads:detail' thread.pk %}" class="d-block h-100 text-decoration-none text-reset">
+    <div class="card h-100 thread-card">
+      {% include "partials/thread_image.html" with path=thread.image_path cover=thread.uses_cover cls="card-img-top" height=200 %}
+      <div class="card-body">
+        <h5 class="card-title">{{ thread.title }}</h5>
+        <p class="card-text">{{ thread.body }}</p>
+      </div>
+      <div class="card-footer">
+        {{ thread.user.display_name }} | <span class="book-name">{{ thread.book.title }}</span>
+        <span class="ms-2"><i class="bi {% if thread.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %} text-danger"></i> {{ thread.num_likes }}</span>
+      </div>
+    </div>
+  </a>
+</div>

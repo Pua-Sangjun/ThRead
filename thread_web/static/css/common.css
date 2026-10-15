@@ -1,0 +1,256 @@
+/* ThRead 서브 페이지 공통 스타일 (06-main.html의 디자인 시스템과 동일) */
+@font-face {
+  font-family: "SBAggro_L";
+  src: url("../fonts/SBAggroOTF_L.ttf") format("truetype");
+}
+@font-face {
+  font-family: "GmarketSansTTFMedium";
+  src: url("../fonts/GmarketSansTTFMedium.ttf") format("truetype");
+}
+
+:root {
+  --point-color: #fe4a51;
+}
+body {
+  margin: 0;
+  color: #333;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+main {
+  flex: 1;
+}
+.section-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+.point {
+  color: var(--point-color);
+}
+
+/* Navbar */
+.navbar-custom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: transparent;
+}
+.navbar-custom .navbar-brand {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.5rem;
+}
+.th {
+  color: #fff;
+}
+.read {
+  color: var(--point-color);
+}
+.navbar-custom .nav-link {
+  font-family: "SBAggro_L";
+  color: #fff;
+}
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus,
+.navbar-custom .nav-link.active {
+  color: var(--point-color);
+}
+.navbar-custom .navbar-collapse.show,
+.navbar-custom .navbar-collapse.collapsing {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+}
+
+/* 서브 페이지 헤더 (Hero 축소판) */
+.page-header {
+  position: relative;
+  min-height: 260px;
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+  background: url("../nav/hero_image.jpg") center / cover;
+  padding: 6rem 0 2rem;
+}
+.page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+.page-header .container {
+  position: relative;
+}
+.page-header h1 {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 2rem;
+  margin: 0 0 0.25rem;
+}
+.page-header p {
+  margin: 0;
+  color: #ddd;
+}
+
+/* 버튼 */
+.btn-point {
+  background-color: var(--point-color);
+  border-color: var(--point-color);
+  color: #fff;
+}
+.btn-point:hover,
+.btn-point:focus {
+  background-color: #e63e45;
+  border-color: #e63e45;
+  color: #fff;
+}
+.btn-outline-point {
+  border-color: var(--point-color);
+  color: var(--point-color);
+}
+.btn-outline-point:hover,
+.btn-outline-point.active {
+  background-color: var(--point-color);
+  color: #fff;
+}
+
+/* 도서 카드 */
+.book-card {
+  display: block;
+  color: #333;
+  text-align: center;
+}
+.book-card img {
+  width: 100%;
+  aspect-ratio: 150 / 220;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+.book-card:hover img {
+  transform: translateY(-4px);
+}
+.book-card .title {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.book-card .meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* 쓰레드 카드 */
+.thread-card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+.thread-card:hover {
+  transform: translateY(-4px);
+}
+.thread-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+.thread-card .card-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1rem;
+  font-weight: 700;
+}
+.thread-card .card-text {
+  font-size: 0.875rem;
+  color: #666;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.thread-card .card-footer {
+  background-color: transparent;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+}
+.thread-card .book-name {
+  color: var(--point-color);
+}
+
+/* 도서 표지를 쓰레드 이미지로 쓸 때: 흐린 배경 + 원본 크기 표지 */
+.thread-cover {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+}
+.thread-cover-bg {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) brightness(0.75);
+}
+.thread-cover img {
+  position: relative;
+  height: 85%;
+  max-height: 220px; /* 원본(150x220)보다 크게 늘리지 않음 */
+  width: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* Pagination */
+.thread-pagination .page-link {
+  border: none;
+  background-color: transparent;
+  color: #555;
+  box-shadow: none;
+}
+.thread-pagination .page-item.active .page-link {
+  color: var(--point-color);
+  font-weight: 700;
+  background-color: transparent;
+}
+
+/* Modal */
+.logout-modal .modal-content {
+  border: none;
+  border-radius: 0.75rem;
+}
+.logout-modal .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.logout-modal .modal-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.1rem;
+}
+
+/* Footer */
+.site-footer {
+  background: #222;
+  color: #aaa;
+  font-size: 0.85rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+.site-footer .logo {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1.2rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: #999;
+  padding: 3rem 0;
+}

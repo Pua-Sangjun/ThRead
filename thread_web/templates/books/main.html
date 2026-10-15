@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/main.css' %}" />{% endblock %}
+
+{% block content %}
+  <!-- ========== Hero ========== -->
+  <section class="hero-section">
+    <img src="{% static 'nav/hero_image.jpg' %}" alt="Hero Image" class="hero-img" />
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">
+        AI 기반 도서 분석 및<br class="d-412-break" />
+        창작 지원 통합 솔루션 서비스
+      </h1>
+      <div class="hero-subtitle"><span class="th">Th</span><span class="read">Read</span></div>
+    </div>
+  </section>
+
+  <!-- ========== Bestseller (Hero 위에 반만 걸침) ========== -->
+  <section class="bestseller">
+    <div class="container bestseller-container">
+      <h3 class="section-title">베스트셀러</h3>
+      <div id="bestsellerCarousel" class="carousel slide bestseller-carousel" data-bs-ride="carousel" data-bs-interval="3000">
+        <div class="carousel-inner">
+          {% for slide in bestseller_slides %}
+            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+              <div class="d-flex justify-content-center flex-wrap gap-4">
+                {% for book in slide %}
+                  <div class="book-item">
+                    <a href="{% url 'books:detail' book.pk %}">
+                      <img src="{% static book.cover %}" alt="{{ book.title }}" class="book-cover" />
+                      <p class="book-title">{{ book.title }}</p>
+                    </a>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-next" type="button" data-bs-target="#bestsellerCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== AI Recommendation ========== -->
+  <section class="ai-section">
+    <div class="ai-recommendation">
+      <div class="row align-items-center g-4">
+        <div class="col-12 col-md-7 ai-books d-flex justify-content-center justify-content-md-end align-items-start">
+          {% for book in ai_picks %}
+            <a href="{% url 'books:detail' book.pk %}"><img
+              src="{% static book.cover %}"
+              alt="{{ book.title }}"
+              {% if forloop.counter == 2 %}class="img-fluid me-3" style="width: 140px; height: 210px"{% else %}class="img-fluid me-3 mt-3" style="max-width: 120px; min-height: 180px"{% endif %}
+            /></a>
+          {% endfor %}
+        </div>
+        <div class="col-12 col-md-5 text-center text-md-start">
+          <h3 class="mb-3 section-title">AI 추천</h3>
+          <p class="text-muted">구매 목록, 감명 깊게 읽은 도서 등</p>
+          <p class="text-muted">사용자 <span class="highlight">활동 데이터 기반</span> 인공지능 도서 추천</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Genre List (CSS Grid) ========== -->
+  <section class="genre-books">
+    <h3 class="section-title">장르별 도서 목록</h3>
+    <div class="genre-grid">
+      {% for name, area, image in genres %}
+        <a class="genre-item g-{{ area }}" href="{% url 'books:search' %}?genre={{ name|urlencode }}">
+          <img src="{% static image %}" alt="{{ name }}" />
+          <p class="genre-name">{{ name }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ========== Popular Thread ========== -->
+  <section class="thread py-5 bg-light" id="thread">
+    <div class="popular-thread">
+      <h3 class="section-title">지금 이 쓰레드</h3>
+      <h3 class="section-subtitle">최근 사람들이 많이 공감한 게시글입니다</h3>
+    </div>
+    <div class="container">
+      <div class="row g-4">
+        {% for thread in page %}
+          {% include "partials/thread_card.html" with col="col-12 col-sm-4" %}
+        {% empty %}
+          <p class="empty-state">아직 쓰레드가 없습니다.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <nav aria-label="Page navigation">
+      {% include "partials/pagination.html" with anchor="#thread" cls="justify-content-center mt-4" %}
+    </nav>
+    <div class="text-center">
+      <a href="{% url 'threads:list' %}" class="btn btn-outline-secondary btn-sm">쓰레드 더보기 <i class="bi bi-chevron-right"></i></a>
+    </div>
+  </section>
+{% endblock %}

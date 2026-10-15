@@ -1,0 +1,12 @@
+{% comment %}
+페이지 번호 목록. 현재 검색 조건(쿼리스트링)은 유지하고 page 만 바꾼다.
+사용: {% include "partials/pagination.html" with page=page anchor="#thread" cls="justify-content-center mt-4" %}
+{% endcomment %}{% if page.paginator.num_pages > 1 %}
+<ul class="pagination {{ cls }}">
+  {% for n in page.paginator.page_range %}
+    <li class="page-item{% if n == page.number %} active{% endif %}">
+      <a class="page-link" href="{% querystring page=n %}{{ anchor }}"{% if n == page.number %} aria-current="page"{% endif %}>{{ n }}</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}

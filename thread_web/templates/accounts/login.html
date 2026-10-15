@@ -1,0 +1,64 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}ThRead - 로그인{% endblock %}
+
+{% block panel %}
+  <h2 class="auth-title">로그인</h2>
+  <p class="auth-subtitle">
+    {% if KAKAO_LOGIN_ENABLED %}카카오 계정으로 간편하게 시작하세요.{% else %}아이디로 로그인하세요.{% endif %}
+  </p>
+
+  {% if request.GET.error %}
+    <div class="auth-alert is-error" role="alert">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {% if request.GET.error == "cancelled" %}카카오 로그인이 취소되었습니다.
+      {% elif request.GET.error == "state" %}로그인 요청이 만료되었어요. 다시 시도해 주세요.
+      {% elif request.GET.error == "config" %}카카오 로그인이 설정되지 않았어요. .env 의 KAKAO_REST_API_KEY 를 확인해 주세요.
+      {% else %}카카오 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.{% endif %}
+    </div>
+  {% elif request.GET.logout %}
+    <div class="auth-alert" role="status"><i class="bi bi-check-circle-fill"></i> 안전하게 로그아웃되었습니다.</div>
+  {% elif next %}
+    <div class="auth-alert" role="status"><i class="bi bi-lock-fill"></i> 로그인이 필요한 기능이에요. 로그인 후 이전 페이지로 돌아갑니다.</div>
+  {% endif %}
+
+  {% if KAKAO_LOGIN_ENABLED %}
+    <a href="{% url 'accounts:kakao_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn-kakao-login" id="kakaoLoginBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#000" d="M12 3C6.48 3 2 6.58 2 11c0 2.85 1.86 5.35 4.66 6.77l-.95 3.48c-.08.3.26.54.52.37l4.14-2.75c.53.06 1.08.1 1.63.1 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+      </svg>
+      카카오 로그인
+    </a>
+    <div class="divider">또는 아이디로 로그인</div>
+  {% endif %}
+
+  <form method="post" action="{% url 'accounts:login' %}" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}" />
+    {% if form.non_field_errors %}
+      <div class="auth-alert is-error" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i> {{ form.non_field_errors|first }}
+      </div>
+    {% endif %}
+    {% include "accounts/_field.html" with field=form.username icon="person" autocomplete="username" %}
+    {% include "accounts/_field.html" with field=form.password icon="lock" type="password" autocomplete="current-password" %}
+    <button type="submit" class="btn btn-point btn-auth w-100 mt-2">로그인</button>
+  </form>
+
+  <p class="text-center small mt-3 mb-0" style="color: #999">
+    아직 회원이 아니신가요?
+    <a href="{% url 'accounts:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="read text-decoration-none">회원가입</a>
+  </p>
+
+  <div class="divider">또는</div>
+  <a href="{% url 'books:main' %}" class="btn btn-ghost w-100 d-flex align-items-center justify-content-center gap-2">
+    <i class="bi bi-compass"></i> 로그인 없이 둘러보기
+  </a>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const kakaoBtn = document.getElementById("kakaoLoginBtn");
+    if (kakaoBtn) kakaoBtn.addEventListener("click", () => kakaoBtn.classList.add("loading"));
+  </script>
+{% endblock %}

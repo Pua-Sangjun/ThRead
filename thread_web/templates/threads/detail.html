@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ThRead - {{ thread.title }}{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>쓰레드</h1>
+      <p>독자의 이야기</p>
+    </div>
+  </header>
+
+  <main class="container py-5" style="max-width: 820px">
+    <article>
+      {% include "partials/thread_image.html" with path=thread.image_path cover=thread.uses_cover cls="w-100 rounded mb-4" height=360 %}
+      <h2 class="section-title mb-2" style="font-size: 1.8rem">{{ thread.title }}</h2>
+      <p class="text-muted small mb-4">{{ thread.user.display_name }} · {{ thread.created_at|date:"Y.m.d" }}</p>
+      <p style="line-height: 1.9; white-space: pre-line">{{ thread.body }}</p>
+
+      <div class="d-flex flex-wrap gap-2 align-items-center mt-4">
+        <form method="post" action="{% url 'threads:like' thread.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-point btn-sm{% if thread.is_liked %} active{% endif %}">
+            <i class="bi {% if thread.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %} me-1"></i>좋아요 {{ thread.num_likes }}
+          </button>
+        </form>
+        {% if thread.user_id == user.pk %}
+          <form method="post" action="{% url 'threads:delete' thread.pk %}" onsubmit="return confirm('이 쓰레드를 삭제할까요?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-trash me-1"></i>삭제</button>
+          </form>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'books:detail' thread.book.pk %}" class="d-flex gap-3 align-items-center mt-4 p-3 bg-light rounded text-decoration-none text-reset">
+        <img src="{% static thread.book.cover %}" alt="" style="width: 60px; height: 88px; object-fit: cover" />
+        <div>
+          <div class="point fw-bold">{{ thread.book.title }}</div>
+          <div class="small text-muted">{{ thread.book.short_meta }}</div>
+          <div class="small mt-1">도서 상세 보기 <i class="bi bi-chevron-right"></i></div>
+        </div>
+      </a>
+    </article>
+
+    <div class="d-flex justify-content-between mt-5">
+      <a href="{% url 'threads:list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list me-1"></i>목록으로</a>
+    </div>
+
+    <section class="mt-5">
+      <h2 class="section-title mb-3">이 책의 다른 쓰레드</h2>
+      <div class="row g-4">
+        {% for thread in related %}
+          {% include "partials/thread_card.html" %}
+        {% empty %}
+          <p class="empty-state">다른 쓰레드가 없습니다.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

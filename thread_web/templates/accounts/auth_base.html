@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}로그인·회원가입 공통 레이아웃: 좌측 서비스 소개 + 우측 다크 폼{% endcomment %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/login.css' %}" />{% endblock %}
+
+{% block content %}
+  <div class="auth">
+    <section class="auth-visual" aria-label="ThRead 소개">
+      <div class="auth-visual-inner">
+        <span class="auth-eyebrow">AI 도서 분석 · 창작 지원</span>
+        <h1 class="auth-headline">읽은 책이<br />생각의 실이 되는 곳</h1>
+        <p class="auth-lead">
+          ThRead에서 책을 분석하고, 감상을 쓰레드로 남기고,<br />
+          다른 독자와 생각을 이어 보세요.
+        </p>
+        <ul class="feature-list">
+          <li>
+            <div class="feature-icon"><i class="bi bi-stars"></i></div>
+            <div><strong>AI 맞춤 추천</strong><span>읽은 책을 바탕으로 다음 책을 추천받아요</span></div>
+          </li>
+          <li>
+            <div class="feature-icon"><i class="bi bi-chat-square-quote"></i></div>
+            <div><strong>쓰레드</strong><span>책마다 감상과 질문을 나누는 독서 커뮤니티</span></div>
+          </li>
+          <li>
+            <div class="feature-icon"><i class="bi bi-archive"></i></div>
+            <div><strong>나만의 서재</strong><span>관심 있는 책을 담아 마이 페이지에서 관리해요</span></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <main class="auth-panel">
+      <div class="auth-card">
+        <div class="auth-logo"><span class="th">Th</span><span class="read">Read</span></div>
+        {% block panel %}{% endblock %}
+      </div>
+      <p class="auth-footer mb-0">© ThRead · AI 기반 도서 분석 및 창작 지원 통합 솔루션 서비스</p>
+    </main>
+  </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}

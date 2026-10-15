@@ -1,0 +1,314 @@
+/* 메인 페이지 (06-main.html) 전용 스타일 */
+@font-face {
+  font-family: "SBAggroOTF_L";
+  src: url("../fonts/SBAggroOTF_L.ttf") format("truetype");
+}
+:root {
+  --section-gap: 5rem;
+}
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #888;
+  margin: 0.5rem 0 0;
+  font-weight: 400;
+}
+
+/* ========== F302 Hero ========== */
+.hero-section {
+  min-height: 80vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  /* F309: Bestseller가 걸쳐질 공간 확보 */
+  padding-bottom: 160px;
+}
+.hero-section img.hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.hero-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.hero-content {
+  position: relative;
+  z-index: 3;
+  padding: 0 1rem;
+}
+.hero-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: rgba(74, 74, 74, 0.6);
+  border-radius: 0.2rem;
+  padding: 0 1rem;
+}
+.hero-subtitle {
+  font-weight: 700;
+  font-size: 1.5rem;
+  font-family: "GmarketSansTTFMedium";
+}
+.d-412-break {
+  display: none;
+}
+@media (max-width: 575.98px) {
+  .d-412-break {
+    display: block;
+  }
+  .hero-title {
+    font-size: 2rem;
+  }
+}
+
+/* ========== F303 Bestseller (+ F309 Hero 위에 반만 걸치기) ========== */
+.bestseller {
+  position: relative;
+  z-index: 5;
+  margin-top: -157px; /* 섹션 높이(약 314px)의 절반만큼 위로 */
+}
+.bestseller-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+}
+.bestseller-container .section-title {
+  white-space: nowrap;
+}
+.bestseller-carousel {
+  flex: 1;
+  min-width: 0;
+  padding-right: 3rem;
+}
+.book-item {
+  text-align: center;
+  width: 150px;
+}
+.book-item a {
+  text-decoration: none;
+}
+.book-cover {
+  width: 150px;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+.book-item a:hover .book-cover {
+  transform: translateY(-4px);
+}
+.book-title {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bestseller-carousel .carousel-control-next {
+  width: 2.5rem;
+  height: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  border-radius: 50%;
+  background-color: var(--point-color);
+  opacity: 0.9;
+}
+.bestseller-carousel .carousel-control-next-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+@media (max-width: 767.98px) {
+  .bestseller-container {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem 1rem;
+  }
+  .bestseller-carousel {
+    width: 100%;
+  }
+}
+
+/* 모바일: 2권 x 2줄로 배치, Next 버튼은 이미지 위에 겹쳐 표시 */
+@media (max-width: 575.98px) {
+  .bestseller-carousel {
+    padding-right: 0;
+  }
+  .bestseller-carousel .carousel-item > div {
+    gap: 1rem !important;
+  }
+  .bestseller {
+    margin-top: -120px;
+  }
+  .hero-section {
+    padding-bottom: 120px;
+  }
+  .bestseller-container {
+    padding: 1.25rem 0.75rem;
+  }
+}
+
+/* ========== F304 AI Recommendation ========== */
+.ai-section {
+  padding: 3.5rem 0 var(--section-gap); /* F309: 위치 재조정 */
+}
+.ai-recommendation {
+  width: 80%;
+  margin: 0 auto;
+}
+.ai-books img {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.highlight {
+  color: var(--point-color);
+  font-family: "SBAggroOTF_L";
+  font-size: 1.3rem;
+}
+
+/* ========== F305 Genre List (+ F310 CSS Grid 동적 레이아웃) ========== */
+.genre-books {
+  width: 80%;
+  margin: 0 auto;
+  padding-bottom: var(--section-gap);
+}
+.genre-books .section-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.genre-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 130px;
+  gap: 1rem;
+  grid-template-areas:
+    "travel travel health art"
+    "travel travel health history"
+    "romance philosophy health history"
+    "romance philosophy science baby"
+    "romance economy science youth";
+}
+.genre-item {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+.genre-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.genre-item:hover img {
+  transform: scale(1.05);
+}
+.genre-name {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.5rem;
+  margin: 0;
+  color: #fff;
+  font-family: "SBAggro_L";
+  font-size: 1.1rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+.g-travel { grid-area: travel; }
+.g-health { grid-area: health; }
+.g-art { grid-area: art; }
+.g-history { grid-area: history; }
+.g-romance { grid-area: romance; }
+.g-philosophy { grid-area: philosophy; }
+.g-science { grid-area: science; }
+.g-baby { grid-area: baby; }
+.g-youth { grid-area: youth; }
+.g-economy { grid-area: economy; }
+@media (max-width: 575.98px) {
+  .genre-books {
+    width: 90%;
+  }
+  .genre-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 120px;
+    gap: 0.75rem;
+    grid-template-areas:
+      "travel art"
+      "travel history"
+      "health history"
+      "health romance"
+      "philosophy romance"
+      "science baby"
+      "science youth"
+      "economy economy";
+  }
+}
+
+/* ========== F306 Popular Thread ========== */
+.popular-thread {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.thread .container {
+  width: 80%;
+  max-width: none;
+  margin: 0 auto;
+}
+.thread-card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+.thread-card:hover {
+  transform: translateY(-4px);
+}
+.thread-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+.thread-card .card-title {
+  font-family: "GmarketSansTTFMedium";
+  font-size: 1rem;
+  font-weight: 700;
+}
+.thread-card .card-text {
+  font-size: 0.875rem;
+  color: #666;
+}
+.thread-card .card-footer {
+  background-color: transparent;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+}
+.thread-card .book-name {
+  color: var(--point-color);
+}
+.thread .pagination .page-link {
+  border: none;
+  background-color: transparent;
+  color: #555;
+  box-shadow: none;
+}
+.thread .pagination .page-item.active .page-link {
+  color: var(--point-color);
+  font-weight: 700;
+  background-color: transparent;
+}
+

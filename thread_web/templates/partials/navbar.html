@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-sm navbar-dark navbar-custom">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="{% url 'books:main' %}"><span class="th">Th</span><span class="read">Read</span></a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto text-end">
+        <li class="nav-item">
+          <a class="nav-link{% if nav_namespace == 'threads' %} active{% endif %}" href="{% url 'threads:list' %}">쓰레드</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if nav_namespace == 'books' and nav_name == 'search' %} active{% endif %}" href="{% url 'books:search' %}">도서 검색</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link{% if nav_name == 'mypage' %} active{% endif %}" href="{% url 'mypage' %}">마이 페이지</a>
+        </li>
+        <li class="nav-item">
+          {% if user.is_authenticated %}
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">로그아웃</a>
+          {% else %}
+            <a class="nav-link{% if nav_namespace == 'accounts' %} active{% endif %}" href="{% url 'accounts:login' %}">로그인</a>
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

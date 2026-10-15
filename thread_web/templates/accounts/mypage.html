@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}ThRead - 마이 페이지{% endblock %}
+{% block extra_css %}
+  <style>
+    .nav-tabs .nav-link { color: #666; font-family: "SBAggro_L"; }
+    .nav-tabs .nav-link.active { color: var(--point-color); }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>마이 페이지</h1>
+      <p>담은 도서와 나의 쓰레드를 한눈에</p>
+    </div>
+  </header>
+
+  <main class="container py-5">
+    <div class="d-flex align-items-center gap-3 mb-5">
+      <div class="rounded-circle bg-light d-flex align-items-center justify-content-center overflow-hidden" style="width: 72px; height: 72px; font-size: 2rem">
+        {% if user.profile_image %}
+          <img src="{{ user.profile_image }}" alt="" style="width: 100%; height: 100%; object-fit: cover" />
+        {% else %}
+          <i class="bi bi-person"></i>
+        {% endif %}
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="section-title">{{ user.display_name }} 님</div>
+          {% if user.is_kakao %}
+            <span class="badge rounded-pill" style="background: #fee500; color: rgba(0, 0, 0, 0.85)">카카오</span>
+          {% endif %}
+        </div>
+        <div class="small text-muted">
+          담은 도서 {{ archive|length }} · 내 쓰레드 {{ mine|length }} · 좋아요 {{ liked|length }}
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-archive" type="button" role="tab">담은 도서</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-mine" type="button" role="tab">내 쓰레드</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-liked" type="button" role="tab">좋아요한 쓰레드</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tab-archive" role="tabpanel">
+        <div class="row g-4">
+          {% for book in archive %}
+            {% include "partials/book_card.html" %}
+          {% empty %}
+            <div class="empty-state">아직 담은 도서가 없습니다.<br /><a href="{% url 'books:search' %}" class="btn btn-point btn-sm mt-3">도서 둘러보기</a></div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-mine" role="tabpanel">
+        <div class="row g-4">
+          {% for thread in mine %}
+            {% include "partials/thread_card.html" %}
+          {% empty %}
+            <div class="empty-state">작성한 쓰레드가 없습니다.<br /><a href="{% url 'threads:write' %}" class="btn btn-point btn-sm mt-3">쓰레드 작성</a></div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="tab-pane fade" id="tab-liked" role="tabpanel">
+        <div class="row g-4">
+          {% for thread in liked %}
+            {% include "partials/thread_card.html" %}
+          {% empty %}
+            <div class="empty-state">좋아요한 쓰레드가 없습니다.<br /><a href="{% url 'threads:list' %}" class="btn btn-point btn-sm mt-3">쓰레드 둘러보기</a></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

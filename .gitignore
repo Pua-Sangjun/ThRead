@@ -1,0 +1,11 @@
+# 앱 키 등 비밀 값
+.env
+
+# Django (thread_web)
+thread_web/.venv/
+thread_web/db.sqlite3
+__pycache__/
+*.pyc
+
+# collectstatic 결과
+thread_web/staticfiles/

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ThRead - {{ book.title }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/book_detail.css' %}" />{% endblock %}
+
+{% block content %}
+  <section class="detail-hero" style="background-image: url('{% static book.cover %}')">
+    <div class="container detail-content">
+      <div class="row g-5 align-items-center">
+        <!-- 좌측: 작가 및 도서 소개 -->
+        <div class="col-12 col-lg-6">
+          <h1 class="book-title-lg">{{ book.title }}</h1>
+          <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+            <form method="post" action="{% url 'books:archive' book.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-archive btn-sm px-3{% if is_archived %} active{% endif %}">
+                <i class="bi {% if is_archived %}bi-archive-fill{% else %}bi-archive{% endif %} me-1"></i>
+                {% if is_archived %}담음{% else %}담기{% endif %}
+              </button>
+            </form>
+            <span class="book-meta">{{ book.meta }}</span>
+          </div>
+          {% for paragraph in book.description.splitlines %}
+            {% if paragraph %}<p class="book-desc">{{ paragraph }}</p>{% endif %}
+          {% endfor %}
+
+          {% if author_info %}
+            <div class="author-box">
+              <div class="author-avatar"><i class="bi bi-person"></i></div>
+              <div>
+                <div class="author-name">{{ author_info.name }}</div>
+                <p class="author-desc mb-0">{{ author_info.bio }}</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- 우측: 세부 정보 탭 -->
+        <div class="col-12 col-lg-6">
+          <div class="detail-tabs">
+            <ul class="nav nav-tabs" id="detailTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link{% if not thread_tab %} active{% endif %}" id="library-tab" data-bs-toggle="tab" data-bs-target="#library-pane" type="button" role="tab" aria-controls="library-pane" aria-selected="{% if thread_tab %}false{% else %}true{% endif %}">
+                  대여 가능 도서관
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link{% if thread_tab %} active{% endif %}" id="thread-tab" data-bs-toggle="tab" data-bs-target="#thread-pane" type="button" role="tab" aria-controls="thread-pane" aria-selected="{% if thread_tab %}true{% else %}false{% endif %}">
+                  쓰레드
+                </button>
+              </li>
+            </ul>
+            <div class="tab-content pt-3">
+              <!-- 대여 가능 도서관 탭 (카카오맵) -->
+              <div class="tab-pane fade{% if not thread_tab %} show active{% endif %}" id="library-pane" role="tabpanel" aria-labelledby="library-tab" tabindex="0">
+                <div class="map-frame" id="libraryMap" role="region" aria-label="대여 가능 도서관 - {{ library.name }} 지도"></div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+                  <p class="small text-white-50 mb-0">
+                    <i class="bi bi-geo-alt-fill read"></i> {{ library.name }} · {{ library.address }}
+                  </p>
+                  <div class="map-links d-flex gap-2">
+                    <a class="btn btn-kakao btn-sm px-3" href="https://map.kakao.com/link/map/{{ library.name|urlencode }},{{ library.lat }},{{ library.lng }}" target="_blank" rel="noopener">
+                      <i class="bi bi-map me-1"></i> 카카오맵
+                    </a>
+                    <a class="btn btn-outline-light btn-sm px-3" href="https://map.kakao.com/link/to/{{ library.name|urlencode }},{{ library.lat }},{{ library.lng }}" target="_blank" rel="noopener">
+                      <i class="bi bi-signpost-2 me-1"></i> 길찾기
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 쓰레드 탭 -->
+              <div class="tab-pane fade{% if thread_tab %} show active{% endif %}" id="thread-pane" role="tabpanel" aria-labelledby="thread-tab" tabindex="0">
+                <ul class="list-group list-group-flush thread-list">
+                  {% for thread in page %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <a href="{% url 'threads:detail' thread.pk %}">
+                        <div>{{ thread.title }}</div>
+                        <div class="thread-author">{{ thread.user.display_name }}</div>
+                      </a>
+                      <span class="likes"><i class="bi {% if thread.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> {{ thread.num_likes }}</span>
+                    </li>
+                  {% empty %}
+                    <li class="list-group-item text-white-50">아직 쓰레드가 없습니다. 첫 쓰레드를 남겨 보세요!</li>
+                  {% endfor %}
+                </ul>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <nav aria-label="Thread page navigation">
+                    {% include "partials/pagination.html" with cls="pagination-sm mb-0" %}
+                  </nav>
+                  <a href="{% url 'threads:write' %}?book={{ book.pk }}" class="btn btn-point btn-sm">
+                    <i class="bi bi-pencil-square me-1"></i> 쓰레드 작성
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_js %}
+  {{ library|json_script:"library-data" }}
+  <script>
+    // ========== 카카오맵 (대여 가능 도서관) ==========
+    // JavaScript 키는 .env 의 KAKAO_APP_KEY (Kakao Developers > 플랫폼 > Web 에 실행 도메인 등록 필요)
+    const KAKAO_APP_KEY = "{{ KAKAO_APP_KEY|escapejs }}";
+    const LIBRARY = JSON.parse(document.getElementById("library-data").textContent);
+    const mapEl = document.getElementById("libraryMap");
+
+    function showMapFallback(message) {
+      const link = document.querySelector(".map-links .btn-kakao").href;
+      mapEl.innerHTML = `<div class="map-fallback">
+        <i class="bi bi-map"></i>
+        <div>${message}</div>
+        <a class="btn btn-kakao btn-sm px-3" href="${link}" target="_blank" rel="noopener">카카오맵에서 보기</a>
+      </div>`;
+    }
+
+    function initKakaoMap() {
+      const center = new kakao.maps.LatLng(LIBRARY.lat, LIBRARY.lng);
+      const map = new kakao.maps.Map(mapEl, { center, level: 3 });
+      new kakao.maps.Marker({ map, position: center });
+      const label = document.createElement("div");
+      label.className = "map-label";
+      label.textContent = LIBRARY.name;
+      new kakao.maps.CustomOverlay({ map, position: center, content: label, yAnchor: 1 });
+      map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+
+      // 탭 전환·화면 크기 변경 시 지도 크기를 다시 계산하고 중심 유지
+      const relayout = () => {
+        map.relayout();
+        map.setCenter(center);
+      };
+      document.getElementById("library-tab").addEventListener("shown.bs.tab", relayout);
+      window.addEventListener("resize", relayout);
+    }
+
+    if (!KAKAO_APP_KEY) {
+      showMapFallback("카카오맵 앱 키가 없습니다. .env 에 KAKAO_APP_KEY 를 넣어 주세요.");
+    } else {
+      const sdk = document.createElement("script");
+      sdk.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(KAKAO_APP_KEY)}&autoload=false`;
+      sdk.onload = () => kakao.maps.load(initKakaoMap);
+      sdk.onerror = () => showMapFallback("지도를 불러오지 못했습니다.");
+      document.head.appendChild(sdk);
+    }
+  </script>
+{% endblock %}

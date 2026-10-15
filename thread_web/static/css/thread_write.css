@@ -1,0 +1,44 @@
+/* 쓰레드 작성 페이지 전용 스타일 */
+.image-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+}
+.image-picker input {
+  position: absolute;
+  opacity: 0;
+}
+.image-picker label {
+  display: block;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+  position: relative;
+}
+.image-picker img {
+  width: 100%;
+  height: 72px;
+  object-fit: cover;
+  display: block;
+}
+.image-picker .thread-cover {
+  height: 72px;
+}
+.image-picker .thread-cover img {
+  width: auto;
+  height: 62px;
+}
+.image-picker .badge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  z-index: 1;
+}
+.image-picker input:checked + label {
+  outline-color: var(--point-color);
+}
+.image-picker input:focus-visible + label {
+  box-shadow: 0 0 0 0.2rem rgba(254, 74, 81, 0.4);
+}

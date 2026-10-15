@@ -1,0 +1,32 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Render 대시보드 > New > Blueprint 에서 이 저장소를 고르면 아래 설정으로 웹 서비스가 만들어진다.
+services:
+  - type: web
+    name: thread
+    runtime: python
+    plan: free
+    rootDir: thread_web
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.9
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true # Render 가 무작위 값을 만들어 준다
+      - key: WEB_CONCURRENCY
+        value: 2
+      # 아래 값들은 Blueprint 생성 시 대시보드에서 직접 입력 (저장소에는 넣지 않음)
+      - key: DATABASE_URL # 무료 PostgreSQL (예: Neon) 연결 주소
+        sync: false
+      - key: KAKAO_APP_KEY
+        sync: false
+      - key: KAKAO_REST_API_KEY
+        sync: false
+      - key: KAKAO_CLIENT_SECRET
+        sync: false
+      - key: DJANGO_SUPERUSER_USERNAME # 관리자 계정 (선택)
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

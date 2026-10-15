@@ -1,0 +1,8 @@
+{% load static %}{% comment %}
+쓰레드 대표 이미지. 도서 표지는 작은 세로형 썸네일이라 가로로 늘리면 깨지므로,
+흐린 표지를 배경으로 깔고 원본 크기 표지를 가운데에 올린다.
+사용: {% include "partials/thread_image.html" with path=... cover=True/False cls=... height=200 %}
+{% endcomment %}{% if cover %}<div class="thread-cover {{ cls }}" style="height: {{ height }}px">
+  <div class="thread-cover-bg" style="background-image: url('{% static path %}')"></div>
+  <img src="{% static path %}" alt="도서 표지" />
+</div>{% else %}<img src="{% static path %}" class="{{ cls }}" style="height: {{ height }}px; object-fit: cover" alt="쓰레드 이미지" />{% endif %}

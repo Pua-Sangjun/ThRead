@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}ThRead - 쓰레드{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>쓰레드</h1>
+      <p>독자들이 나눈 감상과 이야기를 둘러보세요</p>
+    </div>
+  </header>
+
+  <main class="container py-5">
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-4">
+      <form method="get" class="d-flex gap-2 align-items-center" id="filterForm">
+        <label for="bookFilter" class="small text-muted text-nowrap">도서</label>
+        <select id="bookFilter" name="book" class="form-select form-select-sm">
+          <option value="">전체</option>
+          {% for b in books %}
+            <option value="{{ b.pk }}"{% if b.pk|stringformat:"s" == book_id %} selected{% endif %}>{{ b.title }}</option>
+          {% endfor %}
+        </select>
+        <select name="sort" class="form-select form-select-sm" aria-label="정렬">
+          <option value="new"{% if sort != "likes" %} selected{% endif %}>최신순</option>
+          <option value="likes"{% if sort == "likes" %} selected{% endif %}>좋아요순</option>
+        </select>
+        <noscript><button type="submit" class="btn btn-sm btn-outline-secondary">적용</button></noscript>
+      </form>
+      <a href="{% url 'threads:write' %}{% if book_id %}?book={{ book_id }}{% endif %}" class="btn btn-point btn-sm">
+        <i class="bi bi-pencil-square me-1"></i>쓰레드 작성
+      </a>
+    </div>
+
+    <div class="row g-4">
+      {% for thread in page %}
+        {% include "partials/thread_card.html" %}
+      {% empty %}
+        <p class="empty-state">아직 이 도서에 대한 쓰레드가 없습니다. 첫 쓰레드를 작성해 보세요!</p>
+      {% endfor %}
+    </div>
+    <nav aria-label="Page navigation">
+      {% include "partials/pagination.html" with cls="justify-content-center mt-4 thread-pagination" %}
+    </nav>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    // 도서·정렬을 바꾸면 바로 적용 (1페이지부터)
+    document.querySelectorAll("#filterForm select").forEach((s) =>
+      s.addEventListener("change", () => s.form.submit())
+    );
+  </script>
+{% endblock %}

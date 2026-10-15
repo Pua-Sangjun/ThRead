@@ -1,0 +1,23 @@
+{% comment %}
+아이콘 + 플로팅 라벨 입력칸.
+사용: {% include "accounts/_field.html" with field=form.username icon="person" type="text" autocomplete="username" %}
+{% endcomment %}<div class="mb-3">
+  <div class="form-floating position-relative">
+    <i class="bi bi-{{ icon }} input-icon" aria-hidden="true"></i>
+    <input
+      type="{{ type|default:'text' }}"
+      name="{{ field.html_name }}"
+      id="{{ field.id_for_label }}"
+      class="form-control{% if field.errors %} is-invalid{% endif %}"
+      placeholder="{{ field.label }}"
+      {% if type != "password" %}value="{{ field.value|default:'' }}"{% endif %}
+      {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+      {% if field.field.max_length %}maxlength="{{ field.field.max_length }}"{% endif %}
+      {% if autofocus %}autofocus{% endif %}
+      required
+    />
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% for error in field.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+  </div>
+  {% if help %}<div class="field-meta"><span>{{ help }}</span></div>{% endif %}
+</div>

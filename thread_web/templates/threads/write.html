@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ThRead - 쓰레드 작성{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/thread_write.css' %}" />{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <div class="container">
+      <h1>쓰레드 작성</h1>
+      <p>읽은 책에 대한 생각을 나눠 주세요</p>
+    </div>
+  </header>
+
+  <main class="container py-5" style="max-width: 720px">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="{{ form.book.id_for_label }}" class="form-label">도서</label>
+        {{ form.book }}
+      </div>
+
+      <div class="mb-3">
+        <span class="form-label d-block" id="imageLabel">대표 이미지</span>
+        <div class="image-picker" role="radiogroup" aria-labelledby="imageLabel">
+          {% with selected=form.image.value|default:"" %}
+            <!-- 첫 번째: 선택한 도서의 표지 (도서를 바꾸면 스크립트가 표지를 교체) -->
+            <div>
+              <input type="radio" name="image" id="img-cover" value=""{% if not selected %} checked{% endif %} />
+              <label for="img-cover" title="도서 표지">
+                <div class="thread-cover" style="height: 72px" id="coverPreview">
+                  <div class="thread-cover-bg"></div>
+                  <img alt="도서 표지" />
+                </div>
+                <span class="badge text-bg-dark">표지</span>
+                <span class="visually-hidden">도서 표지</span>
+              </label>
+            </div>
+            {% for img in thread_images %}
+              <div>
+                <input type="radio" name="image" id="img-{{ forloop.counter }}" value="{{ img }}"{% if selected == img %} checked{% endif %} />
+                <label for="img-{{ forloop.counter }}" title="이미지 {{ forloop.counter }}">
+                  <img src="{% static img %}" alt="" />
+                  <span class="visually-hidden">이미지 {{ forloop.counter }}</span>
+                </label>
+              </div>
+            {% endfor %}
+          {% endwith %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
+        <input type="text" name="title" id="{{ form.title.id_for_label }}" maxlength="60" required
+          value="{{ form.title.value|default:'' }}" class="form-control{% if form.title.errors %} is-invalid{% endif %}" />
+        <div class="invalid-feedback">제목을 입력해 주세요.</div>
+      </div>
+      <div class="mb-4">
+        <label for="{{ form.body.id_for_label }}" class="form-label">내용</label>
+        <textarea name="body" id="{{ form.body.id_for_label }}" rows="8" required
+          class="form-control{% if form.body.errors %} is-invalid{% endif %}">{{ form.body.value|default:'' }}</textarea>
+        <div class="invalid-feedback">내용을 입력해 주세요.</div>
+      </div>
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{% url 'threads:list' %}" class="btn btn-outline-secondary">취소</a>
+        <button type="submit" class="btn btn-point">등록</button>
+      </div>
+    </form>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+  {{ covers|json_script:"book-covers" }}
+  <script>
+    const covers = JSON.parse(document.getElementById("book-covers").textContent);
+    const bookSelect = document.getElementById("{{ form.book.id_for_label }}");
+    const preview = document.getElementById("coverPreview");
+    function renderCover() {
+      const src = covers[bookSelect.value];
+      preview.querySelector(".thread-cover-bg").style.backgroundImage = `url('${src}')`;
+      preview.querySelector("img").src = src;
+    }
+    bookSelect.addEventListener("change", renderCover);
+    renderCover();
+
+    // 브라우저 기본 검사 대신 Bootstrap 스타일로 표시 (서버에서도 다시 검사)
+    const form = document.querySelector("main form");
+    form.addEventListener("submit", (e) => {
+      form.querySelectorAll("[required]").forEach((el) => (el.value = el.value.trim()));
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        form.classList.add("was-validated");
+      }
+    });
+  </script>
+{% endblock %}

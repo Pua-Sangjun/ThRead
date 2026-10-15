@@ -1,0 +1,300 @@
+{
+  "authors": [
+    {
+      "name": "한강",
+      "bio": "1970년 광주에서 태어나 1993년 『문학과사회』에 시를, 이듬해 서울신문 신춘문예에 단편소설이 당선되며 작품 활동을 시작했다. 『소년이 온다』, 『작별하지 않는다』 등을 펴냈으며, 2024년 노벨문학상을 수상했다."
+    }
+  ],
+  "books": [
+    {
+      "id": 1,
+      "title": "소년이 온다",
+      "author": "한강",
+      "publisher": "창비",
+      "year": 2014,
+      "genre": "역사",
+      "cover": "bestsellers/img1.jpeg",
+      "description": "1980년 5월 광주, 계엄군에 맞서다 죽음을 맞은 소년 동호와 그 주변 인물들의 이야기를 통해 국가 폭력과 인간의 존엄을 그린 장편소설.",
+      "bestseller_rank": 1,
+      "is_ai_pick": false
+    },
+    {
+      "id": 2,
+      "title": "채식주의자",
+      "author": "한강",
+      "publisher": "창비",
+      "year": 2007,
+      "genre": "철학",
+      "cover": "bestsellers/img2.jpeg",
+      "description": "어느 날 꿈을 꾼 뒤로 고기를 먹지 않기로 결심한 영혜. 평범했던 그녀의 선택은 가족과 주변 사람들에게 이해할 수 없는 반항으로 받아들여지고, 일상은 서서히 균열을 일으킨다. 「채식주의자」, 「몽고반점」, 「나무 불꽃」 세 편의 연작으로 이루어져 있으며 2016년 맨부커 인터내셔널상을 수상했다.",
+      "bestseller_rank": 2,
+      "is_ai_pick": false
+    },
+    {
+      "id": 3,
+      "title": "대온실 수리 보고서",
+      "author": "김금희",
+      "publisher": "창비",
+      "year": 2024,
+      "genre": "역사",
+      "cover": "bestsellers/img3.jpeg",
+      "description": "창경궁 대온실의 보수 공사 기록을 맡게 된 주인공이 건물에 얽힌 과거와 자신의 기억을 마주하며 상처를 회복해 가는 이야기.",
+      "bestseller_rank": 3,
+      "is_ai_pick": false
+    },
+    {
+      "id": 4,
+      "title": "급류",
+      "author": "정대건",
+      "publisher": "민음사",
+      "year": 2022,
+      "genre": "로맨스",
+      "cover": "bestsellers/img4.jpeg",
+      "description": "계곡 마을에서 만난 두 사람이 한 사건을 계기로 엇갈리고, 시간이 흐른 뒤 다시 서로를 마주하게 되는 사랑과 상실의 이야기.",
+      "bestseller_rank": 4,
+      "is_ai_pick": false
+    },
+    {
+      "id": 5,
+      "title": "시간의 계곡",
+      "author": "스콧 알렉산더 하워드",
+      "publisher": "-",
+      "year": 2024,
+      "genre": "청소년",
+      "cover": "bestsellers/img5.jpeg",
+      "description": "과거와 미래가 나란히 이어진 계곡에서 살아가는 소녀가 정해진 운명을 바꿀 수 있는지 질문하는 소설.",
+      "bestseller_rank": 5,
+      "is_ai_pick": false
+    },
+    {
+      "id": 6,
+      "title": "인간 실격",
+      "author": "다자이 오사무",
+      "publisher": "민음사",
+      "year": 1948,
+      "genre": "철학",
+      "cover": "bestsellers/img6.jpeg",
+      "description": "타인과 어울리지 못하고 스스로를 '인간 실격'이라 부르는 한 남자의 수기. 인간의 나약함과 고독을 정면으로 다룬 고전.",
+      "bestseller_rank": 6,
+      "is_ai_pick": false
+    },
+    {
+      "id": 7,
+      "title": "노르웨이의 숲",
+      "author": "무라카미 하루키",
+      "publisher": "민음사",
+      "year": 1987,
+      "genre": "로맨스",
+      "cover": "bestsellers/img7.jpeg",
+      "description": "상실을 겪은 청춘들이 사랑과 죽음 사이에서 흔들리며 성장해 가는 모습을 그린 장편소설.",
+      "bestseller_rank": 7,
+      "is_ai_pick": false
+    },
+    {
+      "id": 8,
+      "title": "정원에 대하여",
+      "author": "백온유",
+      "publisher": "-",
+      "year": 2024,
+      "genre": "청소년",
+      "cover": "bestsellers/img8.jpeg",
+      "description": "작은 정원을 가꾸는 일상을 통해 관계와 회복을 이야기하는 소설.",
+      "bestseller_rank": 8,
+      "is_ai_pick": false
+    },
+    {
+      "id": 9,
+      "title": "네 칼이 센가, 내 칼이 센가",
+      "author": "김상웅",
+      "publisher": "-",
+      "year": 2024,
+      "genre": "철학",
+      "cover": "bestsellers/img9.jpeg",
+      "description": "날카로운 질문과 문장으로 삶의 태도를 돌아보게 하는 책.",
+      "bestseller_rank": 9,
+      "is_ai_pick": false
+    },
+    {
+      "id": 10,
+      "title": "새벽의 사원",
+      "author": "미시마 유키오",
+      "publisher": "민음사",
+      "year": 1970,
+      "genre": "여행",
+      "cover": "bestsellers/img10.jpeg",
+      "description": "'풍요의 바다' 4부작 중 세 번째 작품. 동남아시아를 배경으로 환생과 아름다움에 대한 집착을 그린다.",
+      "bestseller_rank": 10,
+      "is_ai_pick": false
+    },
+    {
+      "id": 11,
+      "title": "위싱데이",
+      "author": "소피 커즌스",
+      "publisher": "-",
+      "year": 2024,
+      "genre": "로맨스",
+      "cover": "bestsellers/img11.jpeg",
+      "description": "인생에서 가장 행복한 순간으로 건너뛰고 싶다는 소원이 이루어진 주인공이 잃어버린 시간의 의미를 깨닫는 이야기.",
+      "bestseller_rank": 11,
+      "is_ai_pick": false
+    },
+    {
+      "id": 12,
+      "title": "모순",
+      "author": "양귀자",
+      "publisher": "쓰다",
+      "year": 1998,
+      "genre": "철학",
+      "cover": "bestsellers/img12.jpeg",
+      "description": "평범한 삶과 극적인 삶 사이에서 선택을 고민하는 스물다섯 살 안진진의 이야기. 오랫동안 사랑받아 온 스테디셀러.",
+      "bestseller_rank": 12,
+      "is_ai_pick": false
+    },
+    {
+      "id": 13,
+      "title": "Bauhaus",
+      "author": "-",
+      "publisher": "TASCHEN",
+      "year": 2019,
+      "genre": "예술",
+      "cover": "ai_recommendation/img1.jpeg",
+      "description": "현대 디자인의 출발점이 된 바우하우스의 역사와 작품을 소개하는 책.",
+      "bestseller_rank": null,
+      "is_ai_pick": true
+    },
+    {
+      "id": 14,
+      "title": "Mastering AI",
+      "author": "Jeremy Kahn",
+      "publisher": "-",
+      "year": 2023,
+      "genre": "자연과학",
+      "cover": "ai_recommendation/img2.jpeg",
+      "description": "인공지능의 원리부터 실무 활용까지 단계별로 정리한 입문서.",
+      "bestseller_rank": null,
+      "is_ai_pick": true
+    },
+    {
+      "id": 15,
+      "title": "Design",
+      "author": "-",
+      "publisher": "TASCHEN",
+      "year": 2020,
+      "genre": "예술",
+      "cover": "ai_recommendation/img3.jpeg",
+      "description": "디자인의 기본 원칙과 사례를 담은 안내서.",
+      "bestseller_rank": null,
+      "is_ai_pick": true
+    }
+  ],
+  "threads": [
+    {
+      "id": 1,
+      "book": 1,
+      "author": "김독자",
+      "seed_likes": 128,
+      "image": "threads/img1.jpg",
+      "title": "혼란스러운 마음 속에서도 빛나는 희망 찾기",
+      "body": "한강 작가의 문장은 아픈 기억을 정면으로 마주하게 합니다. 고통스러운 장면들 속에서도 끝내 인간에 대한 믿음을 놓지 않는 이야기가 오래 남았습니다."
+    },
+    {
+      "id": 2,
+      "book": 3,
+      "author": "이서재",
+      "seed_likes": 97,
+      "image": "threads/img2.jpg",
+      "title": "펜 끝에서 피어나는 이야기의 힘",
+      "body": "담담한 문장으로 쌓아 올린 서사가 어떻게 독자를 끌어당기는지 생각해 보게 되는 책이었습니다."
+    },
+    {
+      "id": 3,
+      "book": 14,
+      "author": "박개발",
+      "seed_likes": 85,
+      "image": "threads/img3.jpg",
+      "title": "인공지능 시대, 우리는 무엇을 배워야 할까",
+      "body": "기술의 발전 속도를 따라가기보다, 기술을 이해하고 활용하는 태도가 더 중요하다는 메시지가 인상 깊었습니다. 실무 예제가 풍부해 입문자에게도 추천합니다."
+    },
+    {
+      "id": 4,
+      "book": 8,
+      "author": "최하루",
+      "seed_likes": 76,
+      "image": "threads/img4.jpg",
+      "title": "사소함이 쌓여 만드는 큰 변화",
+      "body": "작은 습관 하나가 삶을 어떻게 바꾸는지 보여 주는 이야기. 구겨진 종이처럼 버려진 시간도 다시 펼칠 수 있다는 위로를 받았습니다."
+    },
+    {
+      "id": 5,
+      "book": 7,
+      "author": "정여행",
+      "seed_likes": 64,
+      "image": "threads/img5.jpg",
+      "title": "마음의 여행을 떠나는 방법",
+      "body": "책장을 넘길 때마다 낯선 도시를 걷는 기분이었습니다. 떠나지 않아도 떠날 수 있다는 걸 알려 준 책입니다."
+    },
+    {
+      "id": 6,
+      "book": 2,
+      "author": "한채린",
+      "seed_likes": 58,
+      "image": "threads/img6.jpg",
+      "title": "한 사람의 선택이 만든 파문",
+      "body": "평범한 일상을 거부한 한 사람과 그를 둘러싼 이들의 시선. 불편하지만 외면할 수 없는 질문을 던지는 작품입니다."
+    },
+    {
+      "id": 7,
+      "book": 2,
+      "author": "userA",
+      "seed_likes": 128,
+      "image": "threads/img6.jpg",
+      "title": "영혜의 침묵이 말하는 것들",
+      "body": "영혜는 거의 말을 하지 않지만, 그 침묵이 소설 전체에서 가장 큰 목소리처럼 느껴졌습니다."
+    },
+    {
+      "id": 8,
+      "book": 2,
+      "author": "userB",
+      "seed_likes": 94,
+      "image": "threads/img2.jpg",
+      "title": "「몽고반점」을 다시 읽고",
+      "body": "처음 읽었을 때와 두 번째 읽었을 때 인물에 대한 감정이 완전히 달라졌습니다. 시선의 폭력에 대해 생각해 보게 됩니다."
+    },
+    {
+      "id": 9,
+      "book": 2,
+      "author": "userC",
+      "seed_likes": 71,
+      "image": "threads/img5.jpg",
+      "title": "나무가 되고 싶었던 사람",
+      "body": "「나무 불꽃」의 마지막 장면이 계속 떠오릅니다. 언니 인혜의 시선으로 끝나는 구성이 특히 좋았어요."
+    },
+    {
+      "id": 10,
+      "book": 12,
+      "author": "안진진팬",
+      "seed_likes": 66,
+      "image": "threads/img4.jpg",
+      "title": "행복과 불행은 정말 반대말일까",
+      "body": "모순이라는 제목이 책을 덮고 나서야 이해됐습니다. 삶의 양면을 이렇게 담담하게 쓸 수 있다니."
+    },
+    {
+      "id": 11,
+      "book": 4,
+      "author": "여름계곡",
+      "seed_likes": 52,
+      "image": "threads/img1.jpg",
+      "title": "물살처럼 휩쓸리는 감정",
+      "body": "제목처럼 감정이 한 번에 몰아치는 소설이었습니다. 두 주인공의 선택을 응원하게 됩니다."
+    },
+    {
+      "id": 12,
+      "book": 6,
+      "author": "새벽독서",
+      "seed_likes": 41,
+      "image": "threads/img3.jpg",
+      "title": "요조에게 보내는 편지",
+      "body": "누구나 한 번쯤 자신을 '실격'이라 느낀 적이 있지 않을까요. 오래된 책인데도 지금 읽어도 아픕니다."
+    }
+  ]
+}
